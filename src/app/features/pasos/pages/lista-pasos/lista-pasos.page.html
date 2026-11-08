@@ -1,0 +1,98 @@
+<div class="page-container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1 class="page-title">Mis Pasos</h1>
+      <p class="page-subtitle">Gestiona tus pasos de Semana Santa</p>
+    </div>
+    <a class="btn-primary" routerLink="/pasos/nuevo">
+      <ion-icon name="add-outline"></ion-icon>
+      <span>Nuevo Paso</span>
+    </a>
+  </div>
+
+  <!-- Stats globales -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon-wrap">
+        <ion-icon name="flame-outline"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ pasos.length }}</span>
+        <span class="stat-label">Pasos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap">
+        <ion-icon name="people-outline"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getTotalCostalerosGlobal() }}</span>
+        <span class="stat-label">Costaleros únicos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap">
+        <ion-icon name="calendar-outline"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getTotalEnsayosGlobal() }}</span>
+        <span class="stat-label">Ensayos totales</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid de pasos -->
+  <div class="pasos-grid">
+    <a
+      *ngFor="let paso of pasos"
+      class="paso-card"
+      [routerLink]="['/pasos', paso.id]"
+    >
+      <!-- Franja de color del paso -->
+      <div class="paso-card-color" [style.background]="paso.color || 'var(--mc-accent)'"></div>
+
+      <div class="paso-card-body">
+        <div class="paso-avatar" [style.background]="paso.color || 'var(--mc-accent)'">
+          {{ getInitials(paso.nombre) }}
+        </div>
+        <div class="paso-info">
+          <h3 class="paso-nombre">{{ paso.nombre }}</h3>
+          <p class="paso-desc">{{ paso.descripcion }}</p>
+          <div class="paso-meta">
+            <span class="meta-badge">
+              <ion-icon name="grid-outline"></ion-icon>
+              {{ paso.num_trabajaderas }} trabajaderas
+            </span>
+            <span class="meta-badge">
+              <ion-icon name="people-outline"></ion-icon>
+              {{ getTotalCostaleros(paso.id) }} costaleros
+            </span>
+            <span class="meta-badge">
+              <ion-icon name="calendar-outline"></ion-icon>
+              {{ getTotalEnsayos(paso.id) }} ensayos
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="paso-card-footer">
+        <span class="role-badge">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+          Capataz
+        </span>
+        <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
+      </div>
+    </a>
+
+    <!-- Card añadir nuevo -->
+    <a class="paso-card paso-card-new" routerLink="/pasos/nuevo">
+      <div class="paso-card-new-inner">
+        <ion-icon name="add-circle-outline" class="new-icon"></ion-icon>
+        <span>Añadir paso</span>
+      </div>
+    </a>
+  </div>
+
+</div>

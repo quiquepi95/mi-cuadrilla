@@ -1,0 +1,117 @@
+.page-container { padding: 24px; max-width: 700px; margin: 0 auto; }
+
+.page-header { margin-bottom: 24px; }
+
+.back-link {
+  display: flex; align-items: center; gap: 4px;
+  color: var(--mc-text-muted); font-size: 0.82rem;
+  text-decoration: none; margin-bottom: 10px;
+  &:hover { color: var(--mc-accent); }
+  ion-icon { font-size: 1rem; }
+}
+
+.page-title { font-size: 1.5rem; font-weight: 700; color: var(--mc-text); margin: 0 0 4px; }
+.page-subtitle {
+  color: var(--mc-text-muted); font-size: 0.85rem; margin: 0 0 4px;
+  display: flex; align-items: center; gap: 4px;
+  ion-icon { font-size: 0.9rem; }
+}
+
+.stats-row {
+  display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+}
+
+.stat-card {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--mc-bg-surface); border: 1px solid var(--mc-border);
+  border-radius: 10px; padding: 12px 14px; flex: 1; min-width: 90px;
+
+  ion-icon { font-size: 1.5rem; color: var(--mc-text-muted); }
+  .stat-value { display: block; font-size: 1.3rem; font-weight: 700; color: var(--mc-text); line-height: 1; }
+  .stat-label { font-size: 0.7rem; color: var(--mc-text-muted); text-transform: uppercase; }
+
+  &.stat-presente ion-icon { color: var(--mc-success); }
+  &.stat-ausente ion-icon  { color: var(--mc-danger); }
+  &.stat-justificada ion-icon { color: var(--mc-warning); }
+}
+
+// ---- Lista ----
+.lista-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 80px;
+}
+
+.costalero-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--mc-bg-surface);
+  border: 1px solid var(--mc-border);
+  border-radius: 10px;
+  border-left: 4px solid var(--mc-border);
+  transition: border-left-color 0.15s, background 0.15s;
+
+  &.presente   { border-left-color: var(--mc-success); background: color-mix(in srgb, var(--mc-success) 6%, var(--mc-bg-surface)); }
+  &.ausente    { border-left-color: var(--mc-danger);  background: color-mix(in srgb, var(--mc-danger) 6%, var(--mc-bg-surface)); }
+  &.justificada{ border-left-color: var(--mc-warning); background: color-mix(in srgb, var(--mc-warning) 6%, var(--mc-bg-surface)); }
+}
+
+.costalero-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--mc-accent); color: var(--mc-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700; flex-shrink: 0; opacity: 0.8;
+}
+
+.costalero-info { flex: 1; overflow: hidden; }
+.costalero-nombre { display: block; font-size: 0.9rem; font-weight: 600; color: var(--mc-text); }
+.costalero-meta { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; margin-top: 2px; }
+
+// Botones de estado
+.estado-btns { display: flex; gap: 4px; }
+
+.estado-btn {
+  width: 34px; height: 34px;
+  border-radius: 8px; border: 1px solid var(--mc-border);
+  background: var(--mc-bg); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  color: var(--mc-text-muted);
+
+  ion-icon { font-size: 1.1rem; }
+
+  &:hover { border-color: var(--mc-text-muted); color: var(--mc-text); }
+
+  &.presente-btn.active   { background: var(--mc-success); border-color: var(--mc-success); color: #fff; }
+  &.ausente-btn.active    { background: var(--mc-danger);  border-color: var(--mc-danger);  color: #fff; }
+  &.justificada-btn.active{ background: var(--mc-warning); border-color: var(--mc-warning); color: #fff; }
+}
+
+// Barra de guardado fija
+.save-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  padding: 12px 16px;
+  background: var(--mc-bg-surface);
+  border-top: 1px solid var(--mc-border);
+  display: flex; justify-content: center;
+  z-index: 50;
+}
+
+.btn-save {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 32px;
+  background: var(--mc-accent); color: var(--ion-color-primary-contrast, #fff);
+  border: none; border-radius: 10px;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  transition: filter 0.15s;
+  ion-icon { font-size: 1.1rem; }
+  &:hover { filter: brightness(1.15); }
+}
+
+@media (max-width: 480px) {
+  .page-container { padding: 12px; }
+}

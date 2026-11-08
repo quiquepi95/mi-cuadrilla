@@ -1,0 +1,7 @@
+{
+  "name": "mi-cuadrilla",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

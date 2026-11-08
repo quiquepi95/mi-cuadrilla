@@ -1,0 +1,53 @@
+import { NgModule } from '@angular/core';
+import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
+
+const routes: Routes = [
+  // Redirigir raíz a pasos
+  { path: '', redirectTo: 'pasos', pathMatch: 'full' },
+
+  // Layout principal con sidebar
+  {
+    path: '',
+    component: MainLayoutComponent,
+    children: [
+      {
+        path: 'pasos',
+        loadComponent: () => import('./features/pasos/pages/lista-pasos/lista-pasos.page').then(m => m.ListaPasosPage),
+      },
+      {
+        path: 'pasos/nuevo',
+        loadComponent: () => import('./features/pasos/pages/nuevo-paso/nuevo-paso.page').then(m => m.NuevoPasoPage),
+      },
+      {
+        path: 'pasos/:id',
+        loadComponent: () => import('./features/pasos/pages/detalle-paso/detalle-paso.page').then(m => m.DetallePasoPage),
+      },
+      {
+        path: 'ensayos/:id/lista',
+        loadComponent: () => import('./features/ensayos/pages/pase-lista/pase-lista.page').then(m => m.PaseListaPage),
+      },
+      {
+        path: 'costaleros',
+        loadComponent: () => import('./features/costaleros/pages/lista-costaleros/lista-costaleros.page').then(m => m.ListaCostalerosPage),
+      },
+      {
+        path: 'pasos/:pasoId/costaleros/nuevo',
+        loadComponent: () => import('./features/costaleros/pages/nuevo-costalero/nuevo-costalero.page').then(m => m.NuevoCostaleroPage),
+      },
+      { path: 'trabajaderas', redirectTo: 'pasos', pathMatch: 'full' },
+      { path: 'auxiliares',   redirectTo: 'pasos', pathMatch: 'full' },
+    ],
+  },
+
+  // Fallback
+  { path: '**', redirectTo: 'pasos' },
+];
+
+@NgModule({
+  imports: [
+    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules }),
+  ],
+  exports: [RouterModule],
+})
+export class AppRoutingModule {}

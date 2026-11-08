@@ -1,0 +1,238 @@
+/*
+ * App Global CSS — Mi Cuadrilla
+ * Tema: Cofrade Clásico
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/* ============================================================
+   TEMA COFRADE CLÁSICO
+   Fondo oscuro · Dorado · Solemne
+   ============================================================ */
+
+body.theme-clasico {
+  /* Fondos */
+  --mc-bg:             #12121f;
+  --mc-bg-surface:     #1a1a2e;
+  --mc-bg-card:        #1e2040;
+  --mc-bg-elevated:    #252548;
+
+  /* Acento dorado */
+  --mc-accent:         #c9a84c;
+  --mc-accent-light:   #e8c97a;
+  --mc-accent-dark:    #a07830;
+  --mc-accent-subtle:  rgba(201, 168, 76, 0.12);
+
+  /* Textos */
+  --mc-text:           #f0e6d3;
+  --mc-text-secondary: #c8b89a;
+  --mc-text-muted:     #7a6a55;
+
+  /* Sidebar */
+  --mc-sidebar-bg:     #0a0a15;
+  --mc-sidebar-text:   #c9a84c;
+  --mc-sidebar-hover:  rgba(201, 168, 76, 0.08);
+  --mc-sidebar-active: rgba(201, 168, 76, 0.18);
+
+  /* Bordes */
+  --mc-border:         rgba(201, 168, 76, 0.18);
+  --mc-border-subtle:  rgba(201, 168, 76, 0.08);
+
+  /* Estados */
+  --mc-danger:         #e05a47;
+  --mc-danger-subtle:  rgba(224, 90, 71, 0.12);
+  --mc-success:        #4caf72;
+  --mc-success-subtle: rgba(76, 175, 114, 0.12);
+  --mc-warning:        #f0a500;
+  --mc-warning-subtle: rgba(240, 165, 0, 0.12);
+  --mc-aspirante:      #9b59b6;
+
+  /* Sombras */
+  --mc-shadow-sm:      0 2px 8px rgba(0, 0, 0, 0.4);
+  --mc-shadow-md:      0 4px 16px rgba(0, 0, 0, 0.5);
+  --mc-shadow-lg:      0 8px 32px rgba(0, 0, 0, 0.6);
+  --mc-shadow-gold:    0 4px 20px rgba(201, 168, 76, 0.15);
+
+  /* Ionic overrides */
+  --ion-background-color:        var(--mc-bg);
+  --ion-background-color-rgb:    18, 18, 31;
+  --ion-text-color:              var(--mc-text);
+  --ion-color-primary:           var(--mc-accent);
+  --ion-color-primary-rgb:       201, 168, 76;
+  --ion-color-primary-contrast:  #12121f;
+  --ion-toolbar-background:      var(--mc-sidebar-bg);
+  --ion-toolbar-color:           var(--mc-accent);
+  --ion-item-background:         var(--mc-bg-surface);
+  --ion-card-background:         var(--mc-bg-card);
+  --ion-border-color:            var(--mc-border);
+}
+
+/* ============================================================
+   ESTILOS GLOBALES
+   ============================================================ */
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--mc-border, rgba(201,168,76,0.2));
+  border-radius: 3px;
+  &:hover { background: var(--mc-accent, #c9a84c); }
+}
+
+/* ---- Utilidades globales ---- */
+.text-muted     { color: var(--mc-text-muted) !important; }
+.text-secondary { color: var(--mc-text-secondary) !important; }
+.text-accent    { color: var(--mc-accent) !important; }
+.text-success   { color: var(--mc-success) !important; }
+.text-danger    { color: var(--mc-danger) !important; }
+.text-warning   { color: var(--mc-warning) !important; }
+
+/* ---- Badges ---- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.badge-aspirante  { @extend .badge; background: var(--mc-aspirante);      color: #fff; }
+.badge-presente   { @extend .badge; background: var(--mc-success);         color: #fff; }
+.badge-ausente    { @extend .badge; background: var(--mc-danger);          color: #fff; }
+.badge-justificada{ @extend .badge; background: var(--mc-warning);         color: #fff; }
+.badge-owner      { @extend .badge; background: var(--mc-accent);          color: var(--mc-bg); }
+.badge-auxiliar   { @extend .badge; background: var(--mc-bg-elevated);     color: var(--mc-text-secondary); border: 1px solid var(--mc-border); }
+
+/* ---- Separador dorado ---- */
+.gold-divider {
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--mc-accent), transparent);
+  border-radius: 1px;
+  margin: 8px 0;
+}
+
+/* ---- Card base ---- */
+.mc-card {
+  background: var(--mc-bg-surface);
+  border: 1px solid var(--mc-border-subtle);
+  border-radius: 12px;
+  box-shadow: var(--mc-shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--mc-shadow-md);
+    border-color: var(--mc-border);
+  }
+}
+
+/* ---- Botones globales ---- */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  background: var(--mc-accent);
+  color: #12121f;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter 0.15s, transform 0.1s, box-shadow 0.15s;
+  letter-spacing: 0.02em;
+  box-shadow: var(--mc-shadow-gold);
+
+  ion-icon { font-size: 1.05rem; }
+
+  &:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(201, 168, 76, 0.25);
+  }
+  &:active { transform: translateY(0); }
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  background: transparent;
+  color: var(--mc-text-secondary);
+  border: 1px solid var(--mc-border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+
+  ion-icon { font-size: 1rem; }
+
+  &:hover {
+    border-color: var(--mc-accent);
+    color: var(--mc-accent);
+    background: var(--mc-accent-subtle);
+  }
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: transparent;
+  color: var(--mc-text-muted);
+  border: none;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--mc-sidebar-hover);
+    color: var(--mc-accent);
+  }
+}
+
+/* ---- Animaciones suaves ---- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.25s ease forwards;
+}

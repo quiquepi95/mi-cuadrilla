@@ -1,0 +1,240 @@
+<div class="page-container">
+
+  <!-- ================================================================
+       PASO 1 — Datos del paso
+       ================================================================ -->
+  <div *ngIf="step === 1">
+
+    <div class="page-header">
+      <a routerLink="/pasos" class="back-link">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        Mis Pasos
+      </a>
+      <h1 class="page-title">Nuevo Paso</h1>
+      <p class="page-subtitle">Solo el nombre es obligatorio, el resto lo puedes completar después</p>
+    </div>
+
+    <form class="form-card" (ngSubmit)="continuar()">
+
+      <!-- Nombre -->
+      <div class="field" [class.field-error]="nombreInvalido">
+        <label class="field-label">
+          Nombre del paso
+          <span class="required">*</span>
+        </label>
+        <input
+          class="field-input"
+          type="text"
+          [(ngModel)]="nombre"
+          name="nombre"
+          placeholder="Ej: Cristo de la Buena Muerte"
+          autocomplete="off"
+        />
+        <span class="error-msg" *ngIf="nombreInvalido">El nombre del paso es obligatorio</span>
+      </div>
+
+      <!-- Hermandad -->
+      <div class="field">
+        <label class="field-label">Hermandad</label>
+        <input
+          class="field-input"
+          type="text"
+          [(ngModel)]="hermandad"
+          name="hermandad"
+          placeholder="Ej: Hermandad de los Estudiantes"
+          autocomplete="off"
+        />
+      </div>
+
+      <!-- Nº trabajaderas + Costaleros por trabajadera -->
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Nº de trabajaderas</label>
+          <input
+            class="field-input"
+            type="number"
+            [(ngModel)]="numTrabajaderas"
+            name="numTrabajaderas"
+            placeholder="Ej: 4"
+            min="1"
+            max="20"
+          />
+        </div>
+        <div class="field">
+          <label class="field-label">Costaleros por trabajadera</label>
+          <input
+            class="field-input"
+            type="number"
+            [(ngModel)]="capacidadTrabadadera"
+            name="capacidad"
+            placeholder="Ej: 6"
+            min="1"
+            max="30"
+          />
+        </div>
+      </div>
+
+      <!-- Color del paso -->
+      <div class="field">
+        <label class="field-label">Color del paso</label>
+        <div class="color-grid">
+          <button
+            *ngFor="let c of coloresPreset"
+            type="button"
+            class="color-btn"
+            [class.active]="color === c.hex && !colorPersonalizado"
+            [style.background]="c.hex"
+            (click)="seleccionarColor(c.hex)"
+            [title]="c.label"
+          >
+            <ion-icon name="checkmark-outline" *ngIf="color === c.hex && !colorPersonalizado"></ion-icon>
+          </button>
+
+          <!-- Opción color personalizado -->
+          <div class="color-custom-wrap" [class.active]="colorPersonalizado">
+            <input
+              type="color"
+              class="color-custom-input"
+              [(ngModel)]="color"
+              name="colorCustom"
+              (click)="activarColorPersonalizado()"
+              (input)="activarColorPersonalizado()"
+              [title]="'Color personalizado'"
+            />
+            <ion-icon name="color-palette-outline" class="color-custom-icon"></ion-icon>
+          </div>
+        </div>
+
+        <!-- Preview del color elegido -->
+        <div class="color-preview">
+          <div class="color-preview-dot" [style.background]="color"></div>
+          <span class="color-preview-label">{{ color }}</span>
+        </div>
+      </div>
+
+      <!-- Fecha de la procesión -->
+      <div class="field">
+        <label class="field-label">
+          Fecha de la procesión
+          <span class="optional">(opcional)</span>
+        </label>
+        <input
+          class="field-input"
+          type="date"
+          [(ngModel)]="fechaProcesion"
+          name="fechaProcesion"
+        />
+      </div>
+
+      <!-- Botón continuar -->
+      <div class="form-actions">
+        <a routerLink="/pasos" class="btn-outline">Cancelar</a>
+        <button type="submit" class="btn-primary">
+          Continuar
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ================================================================
+       PASO 2 — Ensayos
+       ================================================================ -->
+  <div *ngIf="step === 2">
+
+    <div class="page-header">
+      <button class="back-link" (click)="volver()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        Volver a datos del paso
+      </button>
+      <h1 class="page-title">Fechas de ensayo</h1>
+      <p class="page-subtitle">¿Conoces ya las fechas de los ensayos de <strong>{{ nombre }}</strong>?</p>
+    </div>
+
+    <!-- Paso resumido -->
+    <div class="paso-resumen">
+      <div class="paso-resumen-color" [style.background]="color"></div>
+      <div class="paso-resumen-info">
+        <span class="paso-resumen-nombre">{{ nombre }}</span>
+        <span class="paso-resumen-meta text-muted">
+          <span *ngIf="numTrabajaderas">{{ numTrabajaderas }} trabajaderas</span>
+          <span *ngIf="numTrabajaderas && capacidadTrabadadera"> · </span>
+          <span *ngIf="capacidadTrabadadera">{{ capacidadTrabadadera }} costaleros por trabajadera</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Lista de ensayos -->
+    <div class="ensayos-form-list">
+      <div
+        *ngFor="let e of ensayos; let i = index"
+        class="ensayo-form-item"
+      >
+        <div class="ensayo-form-header">
+          <span class="ensayo-num">{{ i + 1 }}</span>
+          <button type="button" class="ensayo-remove-btn" (click)="eliminarEnsayo(i)" title="Eliminar ensayo">
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        </div>
+
+        <div class="ensayo-form-fields">
+          <!-- Descripción -->
+          <div class="field">
+            <label class="field-label">Nombre del ensayo</label>
+            <input
+              class="field-input"
+              type="text"
+              [(ngModel)]="e.descripcion"
+              [name]="'desc_' + i"
+              placeholder="Ej: Ensayo 1, Mudá, Retranqueo..."
+            />
+          </div>
+
+          <!-- Fecha + Lugar -->
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Fecha</label>
+              <input
+                class="field-input"
+                type="date"
+                [(ngModel)]="e.fecha"
+                [name]="'fecha_' + i"
+              />
+            </div>
+            <div class="field">
+              <label class="field-label">Lugar</label>
+              <input
+                class="field-input"
+                type="text"
+                [(ngModel)]="e.lugar"
+                [name]="'lugar_' + i"
+                placeholder="Ej: Nave de la hermandad"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón añadir ensayo -->
+      <button type="button" class="add-ensayo-btn" (click)="agregarEnsayo()">
+        <ion-icon name="add-circle-outline"></ion-icon>
+        Añadir ensayo
+      </button>
+    </div>
+
+    <!-- Acciones finales -->
+    <div class="form-actions form-actions-final">
+      <button type="button" class="btn-outline" (click)="saltarEnsayos()">
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+        Ahora no, añadir más tarde
+      </button>
+      <button type="button" class="btn-primary" (click)="guardar()">
+        <ion-icon name="checkmark-outline"></ion-icon>
+        Crear paso
+      </button>
+    </div>
+
+  </div>
+
+</div>

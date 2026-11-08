@@ -1,0 +1,106 @@
+<div class="page-container" *ngIf="ensayo">
+
+  <div class="page-header">
+    <a [routerLink]="['/pasos', ensayo.paso_id]" class="back-link">
+      <ion-icon name="arrow-back-outline"></ion-icon> Volver al paso
+    </a>
+    <h1 class="page-title">Pase de Lista</h1>
+    <p class="page-subtitle">{{ ensayo.descripcion }} · {{ ensayo.fecha | date:'EEEE d MMMM yyyy' }}</p>
+    <p class="page-subtitle">
+      <ion-icon name="location-outline"></ion-icon>
+      {{ ensayo.lugar }}
+    </p>
+  </div>
+
+  <!-- Resumen -->
+  <div class="stats-row">
+    <div class="stat-card stat-presente">
+      <ion-icon name="checkmark-circle-outline"></ion-icon>
+      <div>
+        <span class="stat-value">{{ getPresentes() }}</span>
+        <span class="stat-label">Presentes</span>
+      </div>
+    </div>
+    <div class="stat-card stat-ausente">
+      <ion-icon name="close-circle-outline"></ion-icon>
+      <div>
+        <span class="stat-value">{{ getAusentes() }}</span>
+        <span class="stat-label">Ausentes</span>
+      </div>
+    </div>
+    <div class="stat-card stat-justificada">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      <div>
+        <span class="stat-value">{{ getJustificadas() }}</span>
+        <span class="stat-label">Justificadas</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <ion-icon name="people-outline"></ion-icon>
+      <div>
+        <span class="stat-value">{{ costaleros.length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de costaleros -->
+  <div class="lista-container">
+    <div
+      *ngFor="let c of costaleros"
+      class="costalero-row"
+      [class.presente]="c.estado === 'presente'"
+      [class.ausente]="c.estado === 'ausente'"
+      [class.justificada]="c.estado === 'justificada'"
+    >
+      <div class="costalero-avatar">
+        {{ c.nombre[0] }}{{ c.apellidos[0] }}
+      </div>
+
+      <div class="costalero-info">
+        <span class="costalero-nombre">{{ c.nombre }} {{ c.apellidos }}</span>
+        <div class="costalero-meta">
+          <span class="text-muted">T{{ c.trabajadera_id.replace('t','') }}</span>
+          <span class="badge-aspirante" *ngIf="c.es_aspirante">Aspirante</span>
+        </div>
+      </div>
+
+      <!-- Botones de estado -->
+      <div class="estado-btns">
+        <button
+          class="estado-btn presente-btn"
+          [class.active]="c.estado === 'presente'"
+          (click)="setEstado(c, 'presente')"
+          title="Presente"
+        >
+          <ion-icon name="checkmark-outline"></ion-icon>
+        </button>
+        <button
+          class="estado-btn justificada-btn"
+          [class.active]="c.estado === 'justificada'"
+          (click)="setEstado(c, 'justificada')"
+          title="Justificada"
+        >
+          <ion-icon name="information-outline"></ion-icon>
+        </button>
+        <button
+          class="estado-btn ausente-btn"
+          [class.active]="c.estado === 'ausente'"
+          (click)="setEstado(c, 'ausente')"
+          title="Ausente"
+        >
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guardar -->
+  <div class="save-bar">
+    <button class="btn-save">
+      <ion-icon name="save-outline"></ion-icon>
+      Guardar asistencia
+    </button>
+  </div>
+
+</div>

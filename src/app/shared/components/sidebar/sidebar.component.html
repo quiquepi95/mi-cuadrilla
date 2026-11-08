@@ -1,0 +1,48 @@
+<nav class="sidebar" [class.collapsed]="collapsed()">
+
+  <!-- Header / Logo -->
+  <div class="sidebar-header">
+    <div class="logo-area">
+      <ion-icon name="flame-outline" class="logo-icon"></ion-icon>
+      <div class="logo-text-area" *ngIf="!collapsed()">
+        <span class="logo-text">Mi Cuadrilla</span>
+        <span class="logo-sub">Semana Santa</span>
+      </div>
+    </div>
+    <button class="collapse-btn" (click)="toggle()" [title]="collapsed() ? 'Expandir menú' : 'Colapsar menú'">
+      <ion-icon [name]="collapsed() ? 'chevron-forward-outline' : 'chevron-back-outline'"></ion-icon>
+    </button>
+  </div>
+
+  <!-- Navegación principal -->
+  <div class="nav-section">
+    <span class="nav-section-label" *ngIf="!collapsed()">Gestión</span>
+
+    <a
+      *ngFor="let item of navItems"
+      class="nav-item"
+      [class.active]="isActive(item.route)"
+      [routerLink]="item.route"
+      [title]="collapsed() ? item.label : ''"
+    >
+      <ion-icon [name]="item.icon" class="nav-icon"></ion-icon>
+      <span class="nav-label" *ngIf="!collapsed()">{{ item.label }}</span>
+      <span class="nav-active-dot" *ngIf="isActive(item.route) && collapsed()"></span>
+    </a>
+  </div>
+
+  <!-- Divider -->
+  <div class="sidebar-divider"></div>
+
+  <!-- Footer con perfil -->
+  <div class="sidebar-footer">
+    <a class="nav-item" routerLink="/perfil" [title]="collapsed() ? 'Mi perfil' : ''">
+      <div class="avatar-small">MC</div>
+      <div class="user-info" *ngIf="!collapsed()">
+        <span class="user-name">Mi Capataz</span>
+        <span class="user-role">Capataz</span>
+      </div>
+    </a>
+  </div>
+
+</nav>
