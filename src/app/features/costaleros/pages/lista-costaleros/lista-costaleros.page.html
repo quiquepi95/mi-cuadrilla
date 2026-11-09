@@ -8,23 +8,25 @@
   </div>
 
   <!-- Alerta de duplicados -->
-  <div class="alerta-duplicados" *ngIf="duplicados.length > 0">
-    <div class="alerta-dup-left">
-      <ion-icon name="warning-outline"></ion-icon>
-      <div>
-        <strong>{{ duplicados.length }} posible{{ duplicados.length !== 1 ? 's' : '' }} duplicado{{ duplicados.length !== 1 ? 's' : '' }} detectado{{ duplicados.length !== 1 ? 's' : '' }}</strong>
-        <span>Hay costaleros con el mismo nombre pero distinto teléfono. Revísalos para fusionarlos si es la misma persona.</span>
+  @if (duplicados.length > 0) {
+    <div class="alerta-duplicados">
+      <div class="alerta-dup-left">
+        <ion-icon name="warning-outline"></ion-icon>
+        <div>
+          <strong>{{ duplicados.length }} posible{{ duplicados.length !== 1 ? 's' : '' }} duplicado{{ duplicados.length !== 1 ? 's' : '' }} detectado{{ duplicados.length !== 1 ? 's' : '' }}</strong>
+          <span>Hay costaleros con el mismo nombre pero distinto teléfono. Revísalos para fusionarlos si es la misma persona.</span>
+        </div>
       </div>
+      <button
+        class="btn-dup-revisar"
+        [class.active]="mostrarSoloDuplicados"
+        (click)="mostrarSoloDuplicados = !mostrarSoloDuplicados"
+        >
+        <ion-icon [name]="mostrarSoloDuplicados ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+        {{ mostrarSoloDuplicados ? 'Ver todos' : 'Ver duplicados' }}
+      </button>
     </div>
-    <button
-      class="btn-dup-revisar"
-      [class.active]="mostrarSoloDuplicados"
-      (click)="mostrarSoloDuplicados = !mostrarSoloDuplicados"
-    >
-      <ion-icon [name]="mostrarSoloDuplicados ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-      {{ mostrarSoloDuplicados ? 'Ver todos' : 'Ver duplicados' }}
-    </button>
-  </div>
+  }
 
   <!-- Buscador -->
   <div class="search-bar">
@@ -34,10 +36,12 @@
       type="text"
       [(ngModel)]="filtro"
       placeholder="Buscar por nombre, teléfono o alias..."
-    />
-    <button *ngIf="filtro" class="search-clear" (click)="filtro = ''">
-      <ion-icon name="close-outline"></ion-icon>
-    </button>
+      />
+    @if (filtro) {
+      <button class="search-clear" (click)="filtro = ''">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    }
   </div>
 
   <!-- Stats rápidas -->
@@ -46,68 +50,84 @@
       <span class="stat-num">{{ personas.length }}</span>
       <span class="stat-lbl">en nómina</span>
     </div>
-    <div class="stat-chip">
-      <span class="stat-num">{{ personas.length - duplicados.flat().length }}</span>
-      <span class="stat-lbl">sin incidencias</span>
-    </div>
-    <div class="stat-chip stat-chip-warn" *ngIf="duplicados.length > 0">
-      <ion-icon name="warning-outline"></ion-icon>
-      <span class="stat-num">{{ duplicados.flat().length }}</span>
-      <span class="stat-lbl">a revisar</span>
-    </div>
+    @if (duplicados.length > 0) {
+      <div class="stat-chip stat-chip-warn">
+        <ion-icon name="warning-outline"></ion-icon>
+        <span class="stat-num">{{ duplicados.flat().length }}</span>
+        <span class="stat-lbl">a revisar</span>
+      </div>
+    }
   </div>
 
   <!-- Lista -->
   <div class="costaleros-lista">
-    <a
-      *ngFor="let p of personasFiltradas"
-      class="costalero-card"
-      [class.duplicado]="esDuplicado(p.id)"
-      [class.inactivo]="!p.activo"
-    >
-      <!-- Avatar -->
-      <div class="costalero-avatar">{{ p.nombre[0] }}{{ p.apellidos[0] }}</div>
-
-      <!-- Info -->
-      <div class="costalero-info">
-        <div class="costalero-nombre-row">
-          <span class="costalero-nombre">{{ p.nombre }} {{ p.apellidos }}</span>
-          <span class="alias text-muted" *ngIf="p.alias">· {{ p.alias }}</span>
-          <ion-icon
-            name="warning-outline"
-            class="icon-duplicado"
-            *ngIf="esDuplicado(p.id)"
-            title="Posible duplicado"
-          ></ion-icon>
+    @for (p of personasFiltradas; track p) {
+      <a
+        class="costalero-card"
+        [class.duplicado]="esDuplicado(p.id)"
+        >
+        <!-- Avatar -->
+        <div class="costalero-avatar">{{ p.nombre[0] }}{{ p.apellidos[0] }}</div>
+        <!-- Info -->
+        <div class="costalero-info">
+          <div class="costalero-nombre-row">
+            <span class="costalero-nombre">{{ p.nombre }} {{ p.apellidos }}</span>
+            @if (p.alias) {
+              <span class="alias text-muted">· {{ p.alias }}</span>
+            }
+            @if (esDuplicado(p.id)) {
+              <ion-icon
+                name="warning-outline"
+                class="icon-duplicado"
+                title="Posible duplicado"
+              ></ion-icon>
+            }
+          </div>
+          <div class="costalero-meta">
+            <span class="meta-item">
+              <ion-icon name="call-outline"></ion-icon>
+              {{ p.telefono || 'Sin teléfono' }}
+            </span>
+            @if (p.pasos.length > 0) {
+              <span class="meta-item">
+                <ion-icon name="flame-outline"></ion-icon>
+                {{ getPasosTexto(p) }}
+              </span>
+            }
+            @if (p.pasos.length === 0) {
+              <span class="meta-item text-muted">
+                Sin pasos asignados
+              </span>
+            }
+          </div>
         </div>
-        <div class="costalero-meta">
-          <span class="meta-item">
-            <ion-icon name="call-outline"></ion-icon>
-            {{ p.telefono || 'Sin teléfono' }}
-          </span>
-          <span class="meta-item" *ngIf="p.pasos.length > 0">
-            <ion-icon name="flame-outline"></ion-icon>
-            {{ getPasosTexto(p) }}
-          </span>
-          <span class="meta-item text-muted" *ngIf="p.pasos.length === 0">
-            Sin pasos asignados
-          </span>
+        <!-- Badges -->
+        <div class="costalero-badges">
+          @if (p.pasos.length > 1) {
+            <span class="badge-multipasos">
+              {{ p.pasos.length }} pasos
+            </span>
+          }
+          <a
+            class="btn-editar"
+            [routerLink]="['/costaleros', p.id, 'editar']"
+            [queryParams]="{ origen: '/costaleros' }"
+            title="Editar datos personales"
+            (click)="$event.stopPropagation()"
+            >
+            <ion-icon name="pencil-outline"></ion-icon>
+          </a>
         </div>
-      </div>
-
-      <!-- Badges -->
-      <div class="costalero-badges">
-        <span class="badge-multipasos" *ngIf="p.pasos.length > 1">
-          {{ p.pasos.length }} pasos
-        </span>
-      </div>
-    </a>
+      </a>
+    }
 
     <!-- Vacío -->
-    <div class="empty-state" *ngIf="personasFiltradas.length === 0">
-      <ion-icon name="people-outline" class="empty-icon"></ion-icon>
-      <p>No se encontraron costaleros</p>
-    </div>
+    @if (personasFiltradas.length === 0) {
+      <div class="empty-state">
+        <ion-icon name="people-outline" class="empty-icon"></ion-icon>
+        <p>No se encontraron costaleros</p>
+      </div>
+    }
   </div>
 
 </div>

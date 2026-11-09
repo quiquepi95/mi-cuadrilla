@@ -1,0 +1,115 @@
+<div class="page-container">
+
+  @if (persona) {
+    <div class="page-header">
+      <a [routerLink]="origen" class="back-link">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        Volver
+      </a>
+      <h1 class="page-title">Editar costalero</h1>
+      <p class="page-subtitle">
+        Los cambios se aplican en todos los pasos en los que participa
+      </p>
+    </div>
+  }
+
+  <!-- No encontrado -->
+  @if (!persona) {
+    <div class="empty-state">
+      <ion-icon name="person-outline" class="empty-icon"></ion-icon>
+      <p>Costalero no encontrado</p>
+      <a routerLink="/costaleros" class="btn-outline">Volver al listado</a>
+    </div>
+  }
+
+  @if (persona) {
+    <form class="form-card" (ngSubmit)="guardar()">
+      <!-- Aviso informativo -->
+      <div class="info-banner">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>Estás editando los datos personales de <strong>{{ persona.nombre }} {{ persona.apellidos }}</strong>. El cambio afecta a todos sus pasos.</span>
+      </div>
+      <!-- Nombre + Apellidos -->
+      <div class="field-row">
+        <div class="field" [class.field-error]="nombreInvalido">
+          <label class="field-label">Nombre <span class="required">*</span></label>
+          <input
+            class="field-input"
+            type="text"
+            [(ngModel)]="nombre"
+            name="nombre"
+            placeholder="Nombre"
+            autocomplete="off"
+            />
+          @if (nombreInvalido) {
+            <span class="error-msg">Obligatorio</span>
+          }
+        </div>
+        <div class="field" [class.field-error]="apellidosInvalido">
+          <label class="field-label">Apellidos <span class="required">*</span></label>
+          <input
+            class="field-input"
+            type="text"
+            [(ngModel)]="apellidos"
+            name="apellidos"
+            placeholder="Apellidos"
+            autocomplete="off"
+            />
+          @if (apellidosInvalido) {
+            <span class="error-msg">Obligatorio</span>
+          }
+        </div>
+      </div>
+      <!-- Teléfono -->
+      <div class="field" [class.field-error]="telefonoInvalido">
+        <label class="field-label">
+          Teléfono
+          <span class="field-hint">Identificador único de la persona</span>
+        </label>
+        <input
+          class="field-input"
+          type="tel"
+          [(ngModel)]="telefono"
+          name="telefono"
+          placeholder="Ej: 600111222"
+          (blur)="onTelefonoBlur()"
+          />
+        <!-- Conflicto de teléfono -->
+        @if (telefonoConflicto) {
+          <div class="alerta-conflicto">
+            <ion-icon name="warning-outline"></ion-icon>
+            <span>
+              Este teléfono ya pertenece a
+              <strong>{{ telefonoConflicto.nombre }} {{ telefonoConflicto.apellidos }}</strong>.
+              Usa un teléfono distinto o corrígelo en el otro costalero primero.
+            </span>
+          </div>
+        }
+      </div>
+      <!-- Alias -->
+      <div class="field">
+        <label class="field-label">
+          Alias / Apodo
+          <span class="optional">(opcional)</span>
+        </label>
+        <input
+          class="field-input"
+          type="text"
+          [(ngModel)]="alias"
+          name="alias"
+          placeholder="Ej: el Largo, Manolo el Chico..."
+          autocomplete="off"
+          />
+      </div>
+      <!-- Acciones -->
+      <div class="form-actions">
+        <a [routerLink]="origen" class="btn-outline">Cancelar</a>
+        <button type="submit" class="btn-primary">
+          <ion-icon name="save-outline"></ion-icon>
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  }
+
+</div>

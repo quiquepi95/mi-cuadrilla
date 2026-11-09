@@ -22,6 +22,7 @@ export interface Paso {
   num_trabajaderas: number; // Número total de trabajaderas
   capacidad_trabajadera: number; // Costaleros que caben en cada trabajadera (igual en todas)
   color?: string;           // Color del paso elegido por el capataz (hex)
+  fecha_procesion?: string; // Fecha de la procesión (ISO, opcional)
   created_at: string;
   updated_at: string;
 }
@@ -78,6 +79,8 @@ export interface Ensayo {
   fecha: string;            // ISO date string
   descripcion?: string;
   lugar?: string;
+  cancelado?: boolean;           // true = ensayo cancelado (lluvia, etc.). No cuenta como próximo ni se pasa lista
+  motivo_cancelacion?: string;
   created_at: string;
   updated_at: string;
   // Relaciones

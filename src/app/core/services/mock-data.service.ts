@@ -1,5 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Paso, Trabajadera, Costalero, Ensayo, Asistencia } from '../models';
+import { PersonasService } from './personas.service';
+import { hoyLocal } from '../utils/fechas';
 import {
   PID_ANTONIO, PID_MANUEL, PID_FRANCISCO, PID_JOSE, PID_ENRIQUE,
   PID_CARLOS, PID_MIGUEL, PID_LUIS, PID_GONZALO2,
@@ -15,8 +17,44 @@ import {
   PID_IGNACIO, PID_GONZALO,
 } from './personas.service';
 
+// ============================================================
+// Datos de prueba EXTRA para probar la pantalla "Ensayos":
+// ensayos pasados (con y sin lista), uno cancelado y uno de HOY.
+// Se quitarán al conectar Supabase.
+// ============================================================
+const ENSAYOS_PRUEBA_EXTRA: Ensayo[] = [
+  { id: 'e12', paso_id: '1', fecha: '2026-10-15', descripcion: 'Ensayo de costal',       lugar: 'Nave de la hermandad', created_at: '', updated_at: '' },
+  { id: 'e13', paso_id: '1', fecha: '2026-11-02', descripcion: 'Ensayo de trabajaderas', lugar: 'Nave de la hermandad', created_at: '', updated_at: '' },
+  { id: 'e14', paso_id: '2', fecha: '2026-10-28', descripcion: 'Ensayo de igualá',       lugar: 'Casa de hermandad',    cancelado: true, motivo_cancelacion: 'Lluvia', created_at: '', updated_at: '' },
+  { id: 'e15', paso_id: '3', fecha: '2026-11-05', descripcion: 'Ensayo de presentación', lugar: 'Basílica del Gran Poder', created_at: '', updated_at: '' },
+  { id: 'e16', paso_id: '2', fecha: hoyLocal(),   descripcion: 'Ensayo de hoy',          lugar: 'Casa de hermandad',    created_at: '', updated_at: '' },
+];
+
+const ASISTENCIAS_PRUEBA_EXTRA: Asistencia[] = [
+  // e12 (Cristo, pasado): lista COMPLETA (los 13 costaleros activos marcados)
+  { id: 'x5',  ensayo_id: 'e12', costalero_id: 'c3',  estado: 'presente',    notas: '',        created_at: '' },
+  { id: 'x6',  ensayo_id: 'e12', costalero_id: 'c4',  estado: 'presente',    notas: '',        created_at: '' },
+  { id: 'x7',  ensayo_id: 'e12', costalero_id: 'c6',  estado: 'presente',    notas: '',        created_at: '' },
+  { id: 'x8',  ensayo_id: 'e12', costalero_id: 'c7',  estado: 'ausente',     notas: 'Trabajo', created_at: '' },
+  { id: 'x9',  ensayo_id: 'e12', costalero_id: 'c9',  estado: 'presente',    notas: '',        created_at: '' },
+  { id: 'x10', ensayo_id: 'e12', costalero_id: 'c10', estado: 'presente',    notas: '',        created_at: '' },
+  { id: 'x11', ensayo_id: 'e12', costalero_id: 'c11', estado: 'presente',    notas: '',        created_at: '' },
+  { id: 'x12', ensayo_id: 'e12', costalero_id: 'c12', estado: 'presente',    notas: '',        created_at: '' },
+  { id: 'x13', ensayo_id: 'e12', costalero_id: 'c13', estado: 'presente',    notas: '',        created_at: '' },
+  { id: 'x1', ensayo_id: 'e12', costalero_id: 'c1', estado: 'presente',    notas: '',      created_at: '' },
+  { id: 'x2', ensayo_id: 'e12', costalero_id: 'c2', estado: 'presente',    notas: '',      created_at: '' },
+  { id: 'x3', ensayo_id: 'e12', costalero_id: 'c5', estado: 'justificada', notas: 'Viaje', created_at: '' },
+  { id: 'x4', ensayo_id: 'e12', costalero_id: 'c8', estado: 'ausente',     notas: '',      created_at: '' },
+  // e15 (Gran Poder, pasado): lista a medias
+  { id: 'y1', ensayo_id: 'e15', costalero_id: 'p-c1', estado: 'presente',  notas: '',      created_at: '' },
+  { id: 'y2', ensayo_id: 'e15', costalero_id: 'p-c2', estado: 'ausente',   notas: '',      created_at: '' },
+  // e13 (Cristo, pasado) y e14 (cancelado): sin lista a propósito
+];
+
 @Injectable({ providedIn: 'root' })
 export class MockDataService {
+
+  private personas = inject(PersonasService);
 
   pasos: Paso[] = [
     { id: '1', nombre: 'Cristo de la Buena Muerte',           descripcion: 'Paso de misterio. Hermandad de los Estudiantes.', imagen_url: '', owner_id: 'user-1', num_trabajaderas: 4, capacidad_trabajadera: 8, color: '#c9a84c', created_at: '2026-01-01', updated_at: '2026-01-01' },
@@ -93,6 +131,7 @@ export class MockDataService {
   ];
 
   ensayos: Ensayo[] = [
+    ...ENSAYOS_PRUEBA_EXTRA,
     { id: 'e1',  paso_id: '1', fecha: '2027-02-10', descripcion: 'Primer ensayo de levantá',  lugar: 'Nave de la hermandad',    created_at: '', updated_at: '' },
     { id: 'e2',  paso_id: '1', fecha: '2027-02-17', descripcion: 'Ensayo de chicotá larga',   lugar: 'Nave de la hermandad',    created_at: '', updated_at: '' },
     { id: 'e3',  paso_id: '1', fecha: '2027-02-24', descripcion: 'Ensayo general',             lugar: 'Calle Feria',             created_at: '', updated_at: '' },
@@ -107,6 +146,7 @@ export class MockDataService {
   ];
 
   asistencias: Asistencia[] = [
+    ...ASISTENCIAS_PRUEBA_EXTRA,
     { id: 'a1',  ensayo_id: 'e1', costalero_id: 'c1',  estado: 'presente',    notas: '',        created_at: '' },
     { id: 'a2',  ensayo_id: 'e1', costalero_id: 'c2',  estado: 'presente',    notas: '',        created_at: '' },
     { id: 'a3',  ensayo_id: 'e1', costalero_id: 'c3',  estado: 'ausente',     notas: 'Trabajo', created_at: '' },
@@ -155,22 +195,84 @@ export class MockDataService {
   getPaso(id: string): Paso | undefined { return this.pasos.find(p => p.id === id); }
 
   getTrabajaderasByPaso(pasoId: string): Trabajadera[] {
-    return this.trabajaderas.filter(t => t.paso_id === pasoId);
+    return this.trabajaderas
+      .filter(t => t.paso_id === pasoId)
+      .sort((a, b) => a.numero - b.numero);
   }
 
   getCostalerosByPaso(pasoId: string, soloActivos = true): Costalero[] {
     return this.costaleros
       .filter(c => c.paso_id === pasoId && (!soloActivos || c.activo))
+      .map(c => this.conDatosDePersona(c))
       .sort((a, b) => a.calzo_cm !== b.calzo_cm ? a.calzo_cm - b.calzo_cm : a.apellidos.localeCompare(b.apellidos, 'es'));
   }
 
   getCostalerosByTrabadadera(trabajaderaId: string, soloActivos = true): Costalero[] {
     return this.costaleros
       .filter(c => c.trabajadera_id === trabajaderaId && (!soloActivos || c.activo))
+      .map(c => this.conDatosDePersona(c))
       .sort((a, b) => a.calzo_cm !== b.calzo_cm ? a.calzo_cm - b.calzo_cm : a.apellidos.localeCompare(b.apellidos, 'es'));
   }
 
-  getEnsayosByPaso(pasoId: string): Ensayo[] { return this.ensayos.filter(e => e.paso_id === pasoId); }
+  /** Registro real (editable) de un costalero en un paso. Úsalo para guardar cambios. */
+  getRegistroCostalero(pasoId: string, costaleroId: string): Costalero | undefined {
+    return this.costaleros.find(c => c.id === costaleroId && c.paso_id === pasoId);
+  }
+
+  /**
+   * Devuelve una copia del costalero con nombre, apellidos y teléfono tomados de la PERSONA,
+   * que es la fuente de verdad. Así, si se edita la persona en el listado global,
+   * el cambio se ve en todos los pasos.
+   */
+  private conDatosDePersona(c: Costalero): Costalero {
+    const p = this.personas.buscarPorId(c.persona_id);
+    return p ? { ...c, nombre: p.nombre, apellidos: p.apellidos, telefono: p.telefono } : c;
+  }
+
+  /** Ensayos de un paso ordenados por fecha (los que no tienen fecha, al final) */
+  getEnsayosByPaso(pasoId: string): Ensayo[] {
+    return this.ensayos
+      .filter(e => e.paso_id === pasoId)
+      .sort((a, b) => {
+        if (!a.fecha && !b.fecha) return 0;
+        if (!a.fecha) return 1;
+        if (!b.fecha) return -1;
+        return a.fecha.localeCompare(b.fecha);
+      });
+  }
+
+  getEnsayo(id: string): Ensayo | undefined {
+    return this.ensayos.find(e => e.id === id);
+  }
+
+  /** Elimina un ensayo y toda la asistencia registrada en él */
+  eliminarEnsayo(id: string) {
+    this.ensayos = this.ensayos.filter(e => e.id !== id);
+    this.asistencias = this.asistencias.filter(a => a.ensayo_id !== id);
+  }
+
+  /** Quita la asistencia de un costalero en un ensayo (vuelve a "sin marcar") */
+  eliminarAsistencia(ensayoId: string, costaleroId: string) {
+    this.asistencias = this.asistencias.filter(a => !(a.ensayo_id === ensayoId && a.costalero_id === costaleroId));
+  }
+
+  /** Crea o actualiza la asistencia de un costalero en un ensayo */
+  guardarAsistencia(ensayoId: string, costaleroId: string, estado: Asistencia['estado'], notas: string) {
+    const existente = this.asistencias.find(a => a.ensayo_id === ensayoId && a.costalero_id === costaleroId);
+    if (existente) {
+      existente.estado = estado;
+      existente.notas = notas;
+    } else {
+      this.asistencias.push({
+        id: `a-${ensayoId}-${costaleroId}`,
+        ensayo_id: ensayoId,
+        costalero_id: costaleroId,
+        estado,
+        notas,
+        created_at: new Date().toISOString(),
+      });
+    }
+  }
 
   getAsistenciasByEnsayo(ensayoId: string): Asistencia[] { return this.asistencias.filter(a => a.ensayo_id === ensayoId); }
 

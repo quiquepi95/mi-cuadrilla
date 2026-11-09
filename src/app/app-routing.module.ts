@@ -24,6 +24,22 @@ const routes: Routes = [
         loadComponent: () => import('./features/pasos/pages/detalle-paso/detalle-paso.page').then(m => m.DetallePasoPage),
       },
       {
+        path: 'pasos/:id/editar',
+        loadComponent: () => import('./features/pasos/pages/editar-paso/editar-paso.page').then(m => m.EditarPasoPage),
+      },
+      {
+        path: 'pasos/:pasoId/ensayos/nuevo',
+        loadComponent: () => import('./features/ensayos/pages/formulario-ensayo/formulario-ensayo.page').then(m => m.FormularioEnsayoPage),
+      },
+      {
+        path: 'pasos/:pasoId/ensayos/:id/editar',
+        loadComponent: () => import('./features/ensayos/pages/formulario-ensayo/formulario-ensayo.page').then(m => m.FormularioEnsayoPage),
+      },
+      {
+        path: 'ensayos',
+        loadComponent: () => import('./features/ensayos/pages/lista-ensayos/lista-ensayos.page').then(m => m.ListaEnsayosPage),
+      },
+      {
         path: 'ensayos/:id/lista',
         loadComponent: () => import('./features/ensayos/pages/pase-lista/pase-lista.page').then(m => m.PaseListaPage),
       },
@@ -32,8 +48,16 @@ const routes: Routes = [
         loadComponent: () => import('./features/costaleros/pages/lista-costaleros/lista-costaleros.page').then(m => m.ListaCostalerosPage),
       },
       {
+        path: 'costaleros/:id/editar',
+        loadComponent: () => import('./features/costaleros/pages/editar-costalero/editar-costalero.page').then(m => m.EditarCostaleroPage),
+      },
+      {
         path: 'pasos/:pasoId/costaleros/nuevo',
         loadComponent: () => import('./features/costaleros/pages/nuevo-costalero/nuevo-costalero.page').then(m => m.NuevoCostaleroPage),
+      },
+      {
+        path: 'pasos/:pasoId/costaleros/:id',
+        loadComponent: () => import('./features/costaleros/pages/detalle-costalero/detalle-costalero.page').then(m => m.DetalleCostaleroPage),
       },
       { path: 'trabajaderas', redirectTo: 'pasos', pathMatch: 'full' },
       { path: 'auxiliares',   redirectTo: 'pasos', pathMatch: 'full' },

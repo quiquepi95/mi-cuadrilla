@@ -1,21 +1,10 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+
 import { RouterModule, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { FormsModule } from '@angular/forms';
 import { MockDataService } from '../../../../core/services/mock-data.service';
-
-// Colores predefinidos para elegir el color del paso
-const COLORES_PRESET = [
-  { hex: '#c9a84c', label: 'Dorado' },
-  { hex: '#8b0000', label: 'Burdeos' },
-  { hex: '#7b3f9e', label: 'Morado' },
-  { hex: '#1a6b3a', label: 'Verde' },
-  { hex: '#1a4a8b', label: 'Azul' },
-  { hex: '#b5651d', label: 'Marrón' },
-  { hex: '#c0392b', label: 'Rojo' },
-  { hex: '#2c3e50', label: 'Azul oscuro' },
-];
+import { COLORES_PRESET } from '../../../../core/constants/colores';
 
 interface EnsayoForm {
   descripcion: string;
@@ -26,11 +15,14 @@ interface EnsayoForm {
 @Component({
   selector: 'app-nuevo-paso',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule, FormsModule],
+  imports: [RouterModule, IonicModule, FormsModule],
   templateUrl: './nuevo-paso.page.html',
   styleUrls: ['./nuevo-paso.page.scss'],
 })
 export class NuevoPasoPage {
+  private mock = inject(MockDataService);
+  private router = inject(Router);
+
 
   // ---- Paso actual del wizard ----
   step: 1 | 2 = 1;
@@ -51,8 +43,7 @@ export class NuevoPasoPage {
 
   // ---- Estado ----
   submitted = false;
-
-  constructor(private mock: MockDataService, private router: Router) {}
+  ensayosSubmitted = false;
 
   // ---- Paso 1 ----
   get nombreInvalido(): boolean {
@@ -92,7 +83,24 @@ export class NuevoPasoPage {
   }
 
   // ---- Guardar ----
+  fechaEnsayoInvalida(e: EnsayoForm): boolean {
+    return this.ensayosSubmitted && !e.fecha;
+  }
+
+  /** "Crear paso": exige que todos los ensayos añadidos tengan fecha */
   guardar() {
+    this.ensayosSubmitted = true;
+    if (this.ensayos.some(e => !e.fecha)) return;
+    this.crear();
+  }
+
+  /** "Ahora no": crea el paso sin ensayos (descarta las filas que haya a medias) */
+  saltarEnsayos() {
+    this.ensayos = [];
+    this.crear();
+  }
+
+  private crear() {
     const nuevoId = String(this.mock.pasos.length + 1 + Date.now()).slice(-6);
 
     // Añadir paso al mock
@@ -105,6 +113,7 @@ export class NuevoPasoPage {
       num_trabajaderas: this.numTrabajaderas ?? 0,
       capacidad_trabajadera: this.capacidadTrabadadera ?? 0,
       color: this.color,
+      fecha_procesion: this.fechaProcesion || undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
@@ -137,10 +146,6 @@ export class NuevoPasoPage {
     });
 
     this.router.navigate(['/pasos', nuevoId]);
-  }
-
-  saltarEnsayos() {
-    this.guardar();
   }
 
   volver() {

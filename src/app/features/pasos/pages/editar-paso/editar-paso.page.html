@@ -1,0 +1,180 @@
+<div class="page-container">
+
+  <!-- No encontrado -->
+  @if (!paso) {
+    <div class="empty-state">
+      <ion-icon name="flame-outline" class="empty-icon"></ion-icon>
+      <p>Paso no encontrado</p>
+      <a routerLink="/pasos" class="btn-outline">Volver a Mis Pasos</a>
+    </div>
+  }
+
+  @if (paso) {
+    <div class="page-header">
+      <a [routerLink]="['/pasos', paso.id]" class="back-link">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        {{ paso.nombre }}
+      </a>
+      <h1 class="page-title">Editar paso</h1>
+      <p class="page-subtitle">Los cambios se aplican al pulsar "Guardar cambios"</p>
+    </div>
+    <form class="form-card" (ngSubmit)="guardar()">
+      <!-- ── DATOS DEL PASO ── -->
+      <div class="section-title">
+        <ion-icon name="flame-outline"></ion-icon>
+        Datos del paso
+      </div>
+      <div class="field" [class.field-error]="nombreInvalido">
+        <label class="field-label">Nombre del paso <span class="required">*</span></label>
+        <input class="field-input" type="text" [(ngModel)]="nombre" name="nombre" autocomplete="off" />
+        @if (nombreInvalido) {
+          <span class="error-msg">El nombre del paso es obligatorio</span>
+        }
+      </div>
+      <div class="field">
+        <label class="field-label">Hermandad <span class="optional">(opcional)</span></label>
+        <input class="field-input" type="text" [(ngModel)]="hermandad" name="hermandad" autocomplete="off" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Costaleros por trabajadera</label>
+          <input class="field-input" type="number" [(ngModel)]="capacidad" name="capacidad" min="1" max="30" />
+        </div>
+        <div class="field">
+          <label class="field-label">Fecha de la procesión <span class="optional">(opcional)</span></label>
+          <input class="field-input" type="date" [(ngModel)]="fechaProcesion" name="fechaProcesion" />
+        </div>
+      </div>
+      <!-- Color -->
+      <div class="field">
+        <label class="field-label">Color del paso</label>
+        <div class="color-grid">
+          @for (c of coloresPreset; track c) {
+            <button
+              type="button"
+              class="color-btn"
+              [class.active]="color === c.hex && !colorPersonalizado"
+              [style.background]="c.hex"
+              (click)="seleccionarColor(c.hex)"
+              [title]="c.label"
+              >
+              @if (color === c.hex && !colorPersonalizado) {
+                <ion-icon name="checkmark-outline"></ion-icon>
+              }
+            </button>
+          }
+          <div class="color-custom-wrap" [class.active]="colorPersonalizado">
+            <input
+              type="color"
+              class="color-custom-input"
+              [(ngModel)]="color"
+              name="colorCustom"
+              (click)="activarColorPersonalizado()"
+              (input)="activarColorPersonalizado()"
+              title="Color personalizado"
+              />
+            <ion-icon name="color-palette-outline" class="color-custom-icon"></ion-icon>
+          </div>
+        </div>
+      </div>
+      <!-- ── TRABAJADERAS ── -->
+      <div class="section-title">
+        <ion-icon name="grid-outline"></ion-icon>
+        Trabajaderas
+      </div>
+      <!-- Nº de trabajaderas -->
+      <div class="stepper-row">
+        <div class="stepper-text">
+          <span class="stepper-label">Nº de trabajaderas</span>
+          <span class="stepper-hint">"−" quita la última de la lista; "+" añade una vacía al final</span>
+        </div>
+        <div class="stepper">
+          <button type="button" class="stepper-btn" (click)="restar()" [disabled]="draft.length <= 1" title="Quitar la última">
+            <ion-icon name="remove-outline"></ion-icon>
+          </button>
+          <span class="stepper-value">{{ draft.length }}</span>
+          <button type="button" class="stepper-btn" (click)="sumar()" [disabled]="draft.length >= 20" title="Añadir una">
+            <ion-icon name="add-outline"></ion-icon>
+          </button>
+        </div>
+      </div>
+      <!-- Aviso al quitar una trabajadera con costaleros -->
+      @if (pendienteQuitar) {
+        <div class="quitar-panel">
+          <ion-icon name="warning-outline"></ion-icon>
+          <div class="quitar-body">
+            <strong>
+              La Trabajadera {{ posicion(pendienteQuitar) }} tiene
+              {{ descripcionCostaleros(pendienteQuitar) }}
+            </strong>
+            <span>Si la quitas, se moverán a la trabajadera que elijas:</span>
+            <select class="field-input field-select" [(ngModel)]="destinoId" name="destino">
+              @for (d of destinos; track d) {
+                <option [value]="d.id">Trabajadera {{ posicion(d) }}</option>
+              }
+            </select>
+          </div>
+          <div class="quitar-actions">
+            <button type="button" class="btn-primary" (click)="confirmarQuitar()">Mover y quitar</button>
+            <button type="button" class="btn-outline" (click)="cancelarQuitar()">Cancelar</button>
+          </div>
+        </div>
+      }
+      <!-- Lista ordenable -->
+      <div class="trab-help">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>
+          Con las flechas cambias el orden. La trabajadera se lleva consigo sus costaleros y su diferencia de altura;
+          solo cambia la posición en la que aparece.
+        </span>
+      </div>
+      <div class="trab-list">
+        @for (t of draft; track t; let i = $index) {
+          <div class="trab-row">
+            <div class="trab-order">
+              <button type="button" class="arrow-btn" (click)="subir(i)" [disabled]="i === 0" title="Subir">
+                <ion-icon name="chevron-up-outline"></ion-icon>
+              </button>
+              <button type="button" class="arrow-btn" (click)="bajar(i)" [disabled]="i === draft.length - 1" title="Bajar">
+                <ion-icon name="chevron-down-outline"></ion-icon>
+              </button>
+            </div>
+            <div class="trab-num" [style.background]="color">{{ i + 1 }}</div>
+            <div class="trab-info">
+              <span class="trab-nombre">Trabajadera {{ i + 1 }}</span>
+              <span class="trab-meta">
+                {{ t.activos }} costalero{{ t.activos !== 1 ? 's' : '' }}
+                @if (t.nuevo) {
+                  <span class="trab-nueva">· nueva</span>
+                }
+              </span>
+            </div>
+            <div class="trab-diff">
+              <label class="trab-diff-label">Diferencia</label>
+              <div class="trab-diff-input">
+                <input
+                  class="field-input diff-input"
+                  type="number"
+                  [(ngModel)]="t.diferencia"
+                  [name]="'diff_' + t.id"
+                  min="0"
+                  step="0.5"
+                  />
+                <span class="trab-diff-unit">cm</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+      <!-- Acciones -->
+      <div class="form-actions">
+        <a [routerLink]="['/pasos', paso.id]" class="btn-outline">Cancelar</a>
+        <button type="submit" class="btn-primary">
+          <ion-icon name="save-outline"></ion-icon>
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  }
+
+</div>

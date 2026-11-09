@@ -1,106 +1,143 @@
-<div class="page-container" *ngIf="ensayo">
-
-  <div class="page-header">
-    <a [routerLink]="['/pasos', ensayo.paso_id]" class="back-link">
-      <ion-icon name="arrow-back-outline"></ion-icon> Volver al paso
-    </a>
-    <h1 class="page-title">Pase de Lista</h1>
-    <p class="page-subtitle">{{ ensayo.descripcion }} · {{ ensayo.fecha | date:'EEEE d MMMM yyyy' }}</p>
-    <p class="page-subtitle">
-      <ion-icon name="location-outline"></ion-icon>
-      {{ ensayo.lugar }}
-    </p>
-  </div>
-
-  <!-- Resumen -->
-  <div class="stats-row">
-    <div class="stat-card stat-presente">
-      <ion-icon name="checkmark-circle-outline"></ion-icon>
-      <div>
-        <span class="stat-value">{{ getPresentes() }}</span>
-        <span class="stat-label">Presentes</span>
-      </div>
+@if (ensayo) {
+  <div class="page-container">
+    <div class="page-header">
+      <a [routerLink]="origen || ['/pasos', ensayo.paso_id]" [queryParams]="origen ? null : { tab: 'ensayos' }" class="back-link">
+        <ion-icon name="arrow-back-outline"></ion-icon> {{ origen ? 'Volver a ensayos' : 'Volver al paso' }}
+      </a>
+      <h1 class="page-title">Pase de Lista</h1>
+      <p class="page-subtitle">
+        {{ ensayo.descripcion }}
+        @if (ensayo.fecha) {
+          · {{ ensayo.fecha | date:'EEEE d MMMM yyyy' }}
+        }
+      </p>
+      @if (ensayo.lugar) {
+        <p class="page-subtitle">
+          <ion-icon name="location-outline"></ion-icon>
+          {{ ensayo.lugar }}
+        </p>
+      }
+      @if (ensayo.cancelado) {
+        <p class="aviso-cancelado">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Este ensayo está marcado como cancelado.
+        </p>
+      }
     </div>
-    <div class="stat-card stat-ausente">
-      <ion-icon name="close-circle-outline"></ion-icon>
-      <div>
-        <span class="stat-value">{{ getAusentes() }}</span>
-        <span class="stat-label">Ausentes</span>
-      </div>
-    </div>
-    <div class="stat-card stat-justificada">
-      <ion-icon name="information-circle-outline"></ion-icon>
-      <div>
-        <span class="stat-value">{{ getJustificadas() }}</span>
-        <span class="stat-label">Justificadas</span>
-      </div>
-    </div>
-    <div class="stat-card">
-      <ion-icon name="people-outline"></ion-icon>
-      <div>
-        <span class="stat-value">{{ costaleros.length }}</span>
-        <span class="stat-label">Total</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Lista de costaleros -->
-  <div class="lista-container">
-    <div
-      *ngFor="let c of costaleros"
-      class="costalero-row"
-      [class.presente]="c.estado === 'presente'"
-      [class.ausente]="c.estado === 'ausente'"
-      [class.justificada]="c.estado === 'justificada'"
-    >
-      <div class="costalero-avatar">
-        {{ c.nombre[0] }}{{ c.apellidos[0] }}
-      </div>
-
-      <div class="costalero-info">
-        <span class="costalero-nombre">{{ c.nombre }} {{ c.apellidos }}</span>
-        <div class="costalero-meta">
-          <span class="text-muted">T{{ c.trabajadera_id.replace('t','') }}</span>
-          <span class="badge-aspirante" *ngIf="c.es_aspirante">Aspirante</span>
+    <!-- Resumen -->
+    <div class="stats-row">
+      <div class="stat-card stat-presente">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+        <div>
+          <span class="stat-value">{{ getPresentes() }}</span>
+          <span class="stat-label">Presentes</span>
         </div>
       </div>
-
-      <!-- Botones de estado -->
-      <div class="estado-btns">
-        <button
-          class="estado-btn presente-btn"
-          [class.active]="c.estado === 'presente'"
-          (click)="setEstado(c, 'presente')"
-          title="Presente"
-        >
-          <ion-icon name="checkmark-outline"></ion-icon>
-        </button>
-        <button
-          class="estado-btn justificada-btn"
-          [class.active]="c.estado === 'justificada'"
-          (click)="setEstado(c, 'justificada')"
-          title="Justificada"
-        >
-          <ion-icon name="information-outline"></ion-icon>
-        </button>
-        <button
-          class="estado-btn ausente-btn"
-          [class.active]="c.estado === 'ausente'"
-          (click)="setEstado(c, 'ausente')"
-          title="Ausente"
-        >
-          <ion-icon name="close-outline"></ion-icon>
-        </button>
+      <div class="stat-card stat-ausente">
+        <ion-icon name="close-circle-outline"></ion-icon>
+        <div>
+          <span class="stat-value">{{ getAusentes() }}</span>
+          <span class="stat-label">Ausentes</span>
+        </div>
+      </div>
+      <div class="stat-card stat-justificada">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <div>
+          <span class="stat-value">{{ getJustificadas() }}</span>
+          <span class="stat-label">Justificadas</span>
+        </div>
+      </div>
+      <div class="stat-card stat-sin-marcar">
+        <ion-icon name="ellipse-outline"></ion-icon>
+        <div>
+          <span class="stat-value">{{ getSinMarcar() }}</span>
+          <span class="stat-label">Sin marcar</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <ion-icon name="people-outline"></ion-icon>
+        <div>
+          <span class="stat-value">{{ costaleros.length }}</span>
+          <span class="stat-label">Total</span>
+        </div>
       </div>
     </div>
+    <!-- Lista de costaleros -->
+    <div class="lista-container">
+      @for (c of costaleros; track c) {
+        <div
+          class="costalero-row"
+          [class.presente]="c.estado === 'presente'"
+          [class.ausente]="c.estado === 'ausente'"
+          [class.justificada]="c.estado === 'justificada'"
+          >
+          <div class="costalero-avatar">
+            {{ c.nombre[0] }}{{ c.apellidos[0] }}
+          </div>
+          <div class="costalero-info">
+            <span class="costalero-nombre">{{ c.nombre }} {{ c.apellidos }}</span>
+            <div class="costalero-meta">
+              <span class="text-muted">T{{ numeroTrabajadera(c) }}</span>
+              @if (c.es_aspirante) {
+                <span class="badge-aspirante">Aspirante</span>
+              }
+            </div>
+          </div>
+          <!-- Botones de estado -->
+          <div class="estado-btns">
+            <button
+              class="estado-btn presente-btn"
+              [class.active]="c.estado === 'presente'"
+              (click)="setEstado(c, 'presente')"
+              title="Presente"
+              >
+              <ion-icon name="checkmark-outline"></ion-icon>
+            </button>
+            <button
+              class="estado-btn justificada-btn"
+              [class.active]="c.estado === 'justificada'"
+              (click)="setEstado(c, 'justificada')"
+              title="Justificada"
+              >
+              <ion-icon name="information-outline"></ion-icon>
+            </button>
+            <button
+              class="estado-btn ausente-btn"
+              [class.active]="c.estado === 'ausente'"
+              (click)="setEstado(c, 'ausente')"
+              title="Ausente"
+              >
+              <ion-icon name="close-outline"></ion-icon>
+            </button>
+          </div>
+          <!-- Nota (ausentes y justificados) -->
+          @if (muestraNota(c)) {
+            <div class="nota-wrap">
+              <input
+                class="nota-input"
+                type="text"
+                [(ngModel)]="c.notas"
+                [name]="'nota_' + c.id"
+                [placeholder]="placeholderNota(c)"
+                autocomplete="off"
+                />
+            </div>
+          }
+        </div>
+      }
+    </div>
+    <!-- Guardar -->
+    <div class="save-bar">
+      @if (getSinMarcar() > 0) {
+        <span class="aviso-sin-marcar">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          Quedan {{ getSinMarcar() }} sin marcar
+        </span>
+      }
+      <button class="btn-save" [class.guardado]="guardado" (click)="guardar()">
+        <ion-icon [name]="guardado ? 'checkmark-done-outline' : 'save-outline'"></ion-icon>
+        {{ guardado ? 'Asistencia guardada' : 'Guardar asistencia' }}
+      </button>
+    </div>
   </div>
-
-  <!-- Guardar -->
-  <div class="save-bar">
-    <button class="btn-save">
-      <ion-icon name="save-outline"></ion-icon>
-      Guardar asistencia
-    </button>
-  </div>
-
-</div>
+}

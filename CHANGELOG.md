@@ -127,6 +127,140 @@ Registro de cambios por sesión de trabajo. Cada entrada indica la fecha, lo que
 
 ---
 
+## [0.5.0] — 2026-11-08 · Sesión 5: Identidad de personas, formularios y listado global
+
+### ✅ Hecho
+- **PersonasService** nuevo: catálogo global de personas únicas con UUID real como `persona_id`
+  - UUIDs fijos en el mock (formato `a1b2c3d4-0001-0000-0000-XXXXXXXXXXXX`)
+  - Métodos: `buscar()` (autocompletar), `buscarPorTelefono()`, `getDuplicados()`, `crearPersona()`, `actualizarPersona()`, `fusionar()`
+- **Teléfono** como identificador humano único de persona
+- **Formulario nuevo costalero** (`/pasos/:pasoId/costaleros/nuevo`):
+  - Autocompletar por nombre/apellidos → sugerencias debajo de los campos (no flotando encima)
+  - Badge "vinculado" al seleccionar una sugerencia
+  - Validación de duplicado al salir del campo teléfono:
+    - Teléfono exacto de otra persona → alerta roja con "¿Es la misma persona?"
+    - Nombre similar con teléfono distinto → alerta amarilla
+  - Campos específicos del paso: trabajadera, calzo (decimal), aspirante
+- **Listado global de costaleros** (`/costaleros`):
+  - Ordenado alfabéticamente por nombre (A→Z)
+  - Buscador por nombre, teléfono o alias
+  - Alerta amarilla si hay duplicados detectados + filtro "Ver duplicados"
+  - Badge "X pasos" en costaleros que participan en varios
+  - Botón lápiz para editar datos personales
+  - Personas sin paso asignado (Bernardo Ruiz, Esteban Campos) visibles en el listado
+- **Formulario editar costalero** (`/costaleros/:id/editar`):
+  - Edita nombre, apellidos, teléfono y alias
+  - Cambio de teléfono valida que no coincida con otra persona
+  - Cambios afectan a todos los pasos del costalero
+- **Formulario nuevo paso** (`/pasos/nuevo`):
+  - Wizard en 2 pasos: datos del paso → ensayos
+  - Campos: nombre*, hermandad, nº trabajaderas, costaleros/trabajadera, color (paleta + personalizado), fecha procesión
+  - Paso 2: array dinámico de ensayos con nombre, fecha y lugar
+- **Modelo actualizado**: `persona_id` UUID, `activo` en costalero, `capacidad_trabajadera` en paso, `calzo_cm` decimal, `capacidad` eliminado de trabajadera
+- Dos costaleros sin paso asignado añadidos al mock (Bernardo y Esteban)
+
+### 📍 Estado actual
+> **Formularios de nuevo paso, nuevo costalero y edición funcionando con mock data.**
+> Navegación completa entre todas las pantallas implementadas.
+> Siguiente gran bloque: conectar Supabase (auth + base de datos real).
+
+### ⏭️ Próxima sesión
+- [ ] Crear cuenta en Supabase y obtener credenciales (URL + anon key)
+- [ ] Esquema SQL en Supabase (tablas personas, pasos, trabajaderas, costaleros, ensayos, asistencias + RLS)
+- [ ] Pantalla de login con Google OAuth via Supabase
+- [ ] Guard de autenticación para rutas protegidas
+- [ ] Reemplazar mock data por llamadas reales a Supabase
+
+---
+
+## [0.6.0] — 2026-11-08 · Sesión 6: Costalero en el paso, ensayos y edición del paso
+
+### ✅ Hecho
+- **Pantalla del costalero dentro de un paso** (flecha del detalle): datos personales de solo lectura con botón al editor global; datos del paso editables (trabajadera, calzo, aspirante, baja, notas)
+- **Bajas**: los costaleros de baja se ven apagados con etiqueta "Baja" al final de su trabajadera; no cuentan en totales. Al quitar la baja se borra el motivo
+- **Listado global**: solo muestra los pasos donde la persona está activa
+- Corregido: nombre/apellidos/teléfono se leen de la **Persona**, así que editar en el listado global se refleja en todos los pasos
+- Selector de trabajadera sin "(referencia)" ni "(+X cm)"; "Calzo: 0 cm" en lugar de "Referencia"
+- **Próximo ensayo**: ahora es el más cercano por fecha, con fecha local, ignorando cancelados
+- **Ensayos**: crear, editar, borrar (con confirmación) y marcar como **cancelado** (con motivo). Lista ordenada por fecha
+- **Pase de lista**: nota para ausentes y justificados; el botón **ya guarda** la asistencia; corregida la etiqueta de trabajadera (salía "Te1"/"Tp3")
+- **Editar paso**: nombre, hermandad, color, fecha de procesión, costaleros por trabajadera, nº de trabajaderas (− / +), diferencia de altura de cada trabajadera y **reordenar con flechas**. Al quitar una trabajadera con costaleros se pregunta a cuál se mueven
+- Corregido: la **fecha de procesión** del formulario de nuevo paso no se guardaba
+- Quitado el botón "Compartir" del detalle del paso
+- `CONTEXT.md` actualizado (personas, bajas, ensayos cancelados, orden de trabajaderas, idea de invitación por WhatsApp)
+- **La fecha del ensayo es obligatoria** (formulario de ensayo y ensayos del formulario de nuevo paso). En el nuevo paso, "Ahora no, añadir más tarde" crea el paso sin ensayos y descarta las filas a medias
+- Migrada la inyección por constructor a `inject()` en todos los componentes de `src/app` (esquema oficial `ng generate @angular/core:inject`), para quitar el aviso del editor
+- Migradas todas las plantillas de `*ngIf`/`*ngFor` (obsoletos en Angular 22) a la sintaxis nueva `@if`/`@for` con el esquema oficial `ng generate @angular/core:control-flow`
+
+### 🧪 Pruebas pendientes de revisar
+Cosas hechas pero **no comprobadas todavía en el navegador**. Marcar al probarlas:
+- [ ] Editar paso (Cristo): reordenar trabajaderas con las flechas, guardar y comprobar que los costaleros y la diferencia de altura siguen con su trabajadera
+- [ ] Editar paso: bajar de 4 a 3 trabajaderas y comprobar que el aviso mueve los costaleros a la trabajadera elegida
+- [ ] Marcar un ensayo como cancelado y comprobar que "Próximo ensayo" salta al siguiente
+- [ ] Pase de lista: escribir una nota a un ausente, guardar, salir y volver a entrar; la nota se conserva
+- [ ] Intentar guardar un ensayo sin fecha (formulario de ensayo y nuevo paso): debe mostrar "La fecha es obligatoria"
+- [ ] Nuevo paso: "Ahora no, añadir más tarde" crea el paso sin ensayos
+- [ ] Comprobar que el aviso de `inject()` ya no aparece en el editor
+- [ ] Comprobar que los avisos de `ngIf`/`ngFor` obsoletos ya no aparecen en el editor
+- [ ] Recorrer todas las pantallas tras la migración a `@if`/`@for` y comprobar que se ven igual: lista de pasos, detalle (las 3 pestañas), editar paso, formularios de costalero y de ensayo, pase de lista, listado de costaleros y sidebar
+
+### 📍 Estado actual
+> Toda la gestión de un paso funciona con datos de prueba: crear/editar paso, trabajaderas, costaleros, bajas, ensayos y pase de lista. Falta Supabase, login y el apartado Equipo.
+
+### ⏭️ Próxima sesión
+- [ ] Conectar Supabase (cuenta, esquema SQL, RLS) y sustituir los datos de prueba
+- [ ] Login con Google + guard de rutas
+- [ ] Equipo: invitación por enlace de WhatsApp y permisos
+- [ ] Fusionar duplicados desde el listado global
+
+---
+
+## [0.7.0] — 2026-11-09 · Sesión 7: Pantalla de Ensayos y pase de lista sin marcar
+
+### ✅ Hecho
+- **Pase de lista**: todos los costaleros parten **sin marcar** (antes todos eran "ausente"). Pulsar de nuevo el botón activo lo desmarca; nuevo contador "Sin marcar"; se puede guardar con gente sin marcar y avisa de cuántos quedan; los sin marcar no se guardan
+- **Listado de costaleros**: quitada la etiqueta "sin incidencias"; solo se muestran avisos cuando hay algo que avisar ("a revisar" si hay duplicados)
+- **Pantalla de Ensayos** (menú lateral → `/ensayos`, antes redirigía a Mis Pasos):
+  - Todos los ensayos de todos los pasos, con el paso y su color
+  - Por defecto **Futuros** (hoy incluido, del más cercano al más lejano); filtros **Futuros / Pasados / Todos**, por paso y por rango de fechas desde-hasta. Los pasados van del más reciente al más antiguo
+  - Cancelados apagados, como los costaleros de baja
+  - Ensayos pasados con la lista **pendiente** (nadie marcado → "Sin pasar lista"; algunos costaleros activos sin marcar → "Lista incompleta"): etiqueta en la fila y un aviso arriba (solo si hay alguno) que filtra esos ensayos. Una lista a medias cuenta como pendiente
+  - Crear ensayo desde aquí eligiendo el paso, y editar con el lápiz; al terminar se vuelve a esta pantalla
+- Datos de prueba nuevos: ensayos pasados (uno con lista completa, uno sin lista y uno con la lista a medias), uno cancelado y uno **de hoy**
+- Corregido: al pulsar "Pasar lista" desde la pantalla de Ensayos, **volver** lleva de vuelta a Ensayos (antes llevaba al detalle del paso). Desde el detalle del paso, volver lleva a su pestaña Ensayos
+- Utilidad `origenInterno()` (`core/utils/navegacion.ts`) para validar la ruta de origen que viaja en la URL
+- Utilidad `hoyLocal()` compartida (`core/utils/fechas.ts`)
+- Apuntado en `CONTEXT.md`: decidir cómo tratar años/temporadas, y que las fechas salgan en español
+
+### 🧪 Pruebas pendientes de revisar
+- [ ] Pase de lista: al entrar, ningún botón marcado y contador "Sin marcar" igual al total
+- [ ] Pase de lista: marcar a un costalero y pulsar otra vez el mismo botón lo deja sin marcar
+- [ ] Pase de lista: guardar con gente sin marcar funciona y muestra "Quedan N sin marcar"; al volver a entrar, los sin marcar siguen sin marcar
+- [ ] Listado de costaleros: ya no aparece "sin incidencias"
+- [ ] Menú lateral → Ensayos abre la pantalla nueva (ya no te lleva a Mis Pasos)
+- [ ] Por defecto salen solo los futuros, y el primero es "Ensayo de hoy" con la etiqueta "Hoy"
+- [ ] Filtro Pasados: salen del más reciente al más antiguo; el cancelado (Esperanza, lluvia) sale apagado
+- [ ] El aviso "2 ensayos pasados pendientes de pasar lista" aparece; "Ensayo de trabajaderas" (Cristo) sale con "Sin pasar lista" y "Ensayo de presentación" (Gran Poder) con "Lista incompleta". El "Ensayo de costal" (Cristo, lista completa) y el cancelado de la Esperanza no cuentan
+- [ ] Al pulsar el aviso, se enseñan solo esos dos ensayos
+- [ ] Rango de fechas y filtro por paso funcionan, y "Limpiar filtros" vuelve a Futuros
+- [ ] Nuevo ensayo desde esta pantalla: pide el paso, crea el ensayo y vuelve a la pantalla de Ensayos
+- [ ] Editar un ensayo desde esta pantalla y volver a ella
+- [ ] Pasar lista a "Ensayo de trabajaderas" (todos los costaleros) y completar la de "Ensayo de presentación": el aviso baja a 0 y desaparece
+- [ ] Desde la pantalla de Ensayos, "Pasar lista" y luego volver lleva a Ensayos; desde el detalle del paso, volver lleva a la pestaña Ensayos de ese paso
+
+### 📍 Estado actual
+> La gestión de ensayos está completa con datos de prueba: por paso y de forma general. Falta Supabase, login, el apartado Equipo y decidir lo de los años/temporadas.
+
+### ⏭️ Próxima sesión
+- [ ] Decidir qué hacer con los enlaces **Trabajaderas** y **Auxiliares** del menú lateral (hoy no llevan a ninguna pantalla: redirigen a Mis Pasos). Ver detalle en `CONTEXT.md`
+- [ ] Decidir cómo tratar años/temporadas
+- [ ] Fechas y meses en español
+- [ ] Conectar Supabase (cuenta, esquema SQL, RLS) y sustituir los datos de prueba
+- [ ] Login con Google + guard de rutas
+- [ ] Equipo: invitación por enlace de WhatsApp y permisos
+
+---
+
 <!-- PLANTILLA para próximas sesiones:
 
 ## [0.x.0] — YYYY-MM-DD · Sesión N: Título

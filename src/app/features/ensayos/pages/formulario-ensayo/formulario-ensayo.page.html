@@ -1,0 +1,121 @@
+<div class="page-container">
+
+  <!-- No encontrado -->
+  @if (noEncontrado) {
+    <div class="empty-state">
+      <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
+      <p>Ensayo no encontrado</p>
+      <a routerLink="/pasos" class="btn-outline">Volver a Mis Pasos</a>
+    </div>
+  }
+
+  @if (paso && !noEncontrado) {
+    <div class="page-header">
+      <a [routerLink]="origen || ['/pasos', paso.id]" [queryParams]="origen ? null : { tab: 'ensayos' }" class="back-link">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        {{ origen ? 'Ensayos' : paso.nombre }}
+      </a>
+      <h1 class="page-title">{{ modoEdicion ? 'Editar ensayo' : 'Nuevo ensayo' }}</h1>
+      @if (!modoEdicion) {
+        <p class="page-subtitle">Ponle el nombre que quieras: Ensayo 3, Mudá, Retranqueo...</p>
+      }
+    </div>
+    <form class="form-card" (ngSubmit)="guardar()">
+      <!-- Nombre -->
+      <div class="field" [class.field-error]="descripcionInvalida">
+        <label class="field-label">Nombre del ensayo <span class="required">*</span></label>
+        <input
+          class="field-input"
+          type="text"
+          [(ngModel)]="descripcion"
+          name="descripcion"
+          placeholder="Ej: Ensayo 1, Mudá, Retranqueo..."
+          autocomplete="off"
+          />
+        @if (descripcionInvalida) {
+          <span class="error-msg">Obligatorio</span>
+        }
+      </div>
+      <!-- Fecha + Lugar -->
+      <div class="field-row">
+        <div class="field" [class.field-error]="fechaInvalida">
+          <label class="field-label">Fecha <span class="required">*</span></label>
+          <input class="field-input" type="date" [(ngModel)]="fecha" name="fecha" />
+          @if (fechaInvalida) {
+            <span class="error-msg">La fecha es obligatoria</span>
+          }
+        </div>
+        <div class="field">
+          <label class="field-label">Lugar <span class="optional">(opcional)</span></label>
+          <input
+            class="field-input"
+            type="text"
+            [(ngModel)]="lugar"
+            name="lugar"
+            placeholder="Ej: Nave de la hermandad"
+            autocomplete="off"
+            />
+        </div>
+      </div>
+      <!-- Cancelado (solo al editar) -->
+      @if (modoEdicion) {
+        <div class="field field-check">
+          <label class="check-label" [class.check-label-activo]="cancelado">
+            <input type="checkbox" [ngModel]="cancelado" (ngModelChange)="onCanceladoChange($event)" name="cancelado" class="check-input" />
+            <span class="check-custom"></span>
+            <div class="check-text">
+              <span class="check-title">Ensayo cancelado</span>
+              <span class="check-desc">Por ejemplo, por lluvia. No cuenta como próximo ensayo ni se pasa lista</span>
+            </div>
+          </label>
+        </div>
+        @if (cancelado) {
+          <div class="field">
+            <label class="field-label">Motivo <span class="optional">(opcional)</span></label>
+            <input
+              class="field-input"
+              type="text"
+              [(ngModel)]="motivo"
+              name="motivo"
+              placeholder="Ej: Lluvia, falta de local..."
+              autocomplete="off"
+              />
+          </div>
+        }
+      }
+      <!-- Acciones -->
+      <div class="form-actions">
+        <a [routerLink]="origen || ['/pasos', paso.id]" [queryParams]="origen ? null : { tab: 'ensayos' }" class="btn-outline">Cancelar</a>
+        <button type="submit" class="btn-primary">
+          <ion-icon [name]="modoEdicion ? 'save-outline' : 'add-outline'"></ion-icon>
+          {{ modoEdicion ? 'Guardar cambios' : 'Crear ensayo' }}
+        </button>
+      </div>
+    </form>
+    <!-- Zona de borrado (solo al editar) -->
+    @if (modoEdicion) {
+      <div class="danger-zone">
+        @if (!confirmandoBorrado) {
+          <button type="button" class="btn-danger-outline" (click)="pedirBorrado()">
+            <ion-icon name="trash-outline"></ion-icon>
+            Eliminar ensayo
+          </button>
+        }
+        @if (confirmandoBorrado) {
+          <div class="danger-confirm">
+            <ion-icon name="warning-outline"></ion-icon>
+            <div class="danger-text">
+              <strong>¿Eliminar este ensayo?</strong>
+              <span>Se perderá también la asistencia que hayas registrado en él. No se puede deshacer.</span>
+            </div>
+            <div class="danger-actions">
+              <button type="button" class="btn-danger" (click)="confirmarBorrado()">Sí, eliminar</button>
+              <button type="button" class="btn-outline" (click)="cancelarBorrado()">No</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>

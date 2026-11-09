@@ -1,0 +1,170 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Ensayos</h1>
+      <p class="page-subtitle">Todos los ensayos de tus pasos</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="abrirNuevo()">
+      <ion-icon name="add-outline"></ion-icon>
+      Nuevo ensayo
+    </button>
+  </div>
+
+  <!-- Elegir el paso del nuevo ensayo -->
+  @if (eligiendoPaso) {
+    <div class="nuevo-panel">
+      <div class="nuevo-panel-texto">
+        <strong>¿Para qué paso es el ensayo?</strong>
+      </div>
+      <select class="field-input field-select" [(ngModel)]="pasoNuevoId" name="pasoNuevo">
+        @for (p of pasos; track p.id) {
+          <option [value]="p.id">{{ p.nombre }}</option>
+        }
+      </select>
+      <div class="nuevo-panel-acciones">
+        <button type="button" class="btn-primary" (click)="continuarNuevo()">Continuar</button>
+        <button type="button" class="btn-outline" (click)="eligiendoPaso = false">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  <!-- Advertencia: solo aparece si hay ensayos pasados sin lista -->
+  @if (totalPendientes > 0) {
+    <button
+      type="button"
+      class="aviso-sin-lista"
+      [class.activo]="soloSinLista"
+      (click)="alternarSinLista()"
+    >
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <span>
+        {{ totalPendientes }} ensayo{{ totalPendientes !== 1 ? 's' : '' }} pasado{{ totalPendientes !== 1 ? 's' : '' }} pendiente{{ totalPendientes !== 1 ? 's' : '' }} de pasar lista
+      </span>
+      <span class="aviso-accion">{{ soloSinLista ? 'Ver todos' : 'Ver cuáles' }}</span>
+    </button>
+  }
+
+  <!-- Filtros -->
+  <div class="filtros">
+    <div class="segmented">
+      @for (op of opciones; track op.id) {
+        <button
+          type="button"
+          class="seg-btn"
+          [class.active]="temporalidad === op.id"
+          (click)="temporalidad = op.id"
+        >{{ op.label }}</button>
+      }
+    </div>
+
+    <div class="filtros-row">
+      <div class="field">
+        <label class="field-label">Paso</label>
+        <select class="field-input field-select" [(ngModel)]="pasoFiltroId" name="pasoFiltro">
+          <option value="">Todos los pasos</option>
+          @for (p of pasos; track p.id) {
+            <option [value]="p.id">{{ p.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Desde</label>
+        <input class="field-input" type="date" [(ngModel)]="desde" name="desde" />
+      </div>
+      <div class="field">
+        <label class="field-label">Hasta</label>
+        <input class="field-input" type="date" [(ngModel)]="hasta" name="hasta" />
+      </div>
+    </div>
+
+    <div class="filtros-pie">
+      <span class="contador">
+        {{ filasFiltradas.length }} ensayo{{ filasFiltradas.length !== 1 ? 's' : '' }}
+      </span>
+      @if (hayFiltros) {
+        <button type="button" class="btn-ghost" (click)="limpiarFiltros()">
+          <ion-icon name="close-circle-outline"></ion-icon>
+          Limpiar filtros
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Lista -->
+  <div class="ensayos-lista">
+    @for (f of filasFiltradas; track f.ensayo.id) {
+      <div class="ensayo-card" [class.cancelado]="f.ensayo.cancelado" [class.hoy]="f.esHoy">
+
+        <div class="ensayo-fecha-badge" [style.background]="f.paso.color || 'var(--mc-accent)'">
+          @if (f.ensayo.fecha) {
+            <span class="ensayo-dia">{{ f.ensayo.fecha | date:'d' }}</span>
+            <span class="ensayo-mes">{{ f.ensayo.fecha | date:'MMM' }}</span>
+          } @else {
+            <span class="ensayo-dia">?</span>
+            <span class="ensayo-mes">s/f</span>
+          }
+        </div>
+
+        <div class="ensayo-info">
+          <h4 class="ensayo-titulo">
+            {{ f.ensayo.descripcion }}
+            @if (f.esHoy) { <span class="badge badge-hoy">Hoy</span> }
+            @if (f.ensayo.cancelado) { <span class="badge badge-cancelado">Cancelado</span> }
+            @if (f.lista === 'ninguna') { <span class="badge badge-sin-lista">Sin pasar lista</span> }
+            @if (f.lista === 'incompleta') { <span class="badge badge-sin-lista">Lista incompleta</span> }
+          </h4>
+          <p class="ensayo-paso">
+            <span class="paso-dot" [style.background]="f.paso.color || 'var(--mc-accent)'"></span>
+            {{ f.paso.nombre }}
+            @if (f.ensayo.fecha) {
+              <span class="ensayo-fecha-texto">· {{ f.ensayo.fecha | date:'EEE d MMM yyyy' }}</span>
+            }
+          </p>
+          @if (f.ensayo.lugar) {
+            <p class="ensayo-lugar">
+              <ion-icon name="location-outline"></ion-icon>
+              {{ f.ensayo.lugar }}
+            </p>
+          }
+          @if (f.ensayo.cancelado && f.ensayo.motivo_cancelacion) {
+            <p class="ensayo-motivo">{{ f.ensayo.motivo_cancelacion }}</p>
+          }
+        </div>
+
+        <div class="ensayo-actions">
+          @if (!f.ensayo.cancelado) {
+            <a
+              class="btn-outline-sm"
+              [routerLink]="['/ensayos', f.ensayo.id, 'lista']"
+              [queryParams]="{ origen: '/ensayos' }"
+            >
+              <ion-icon name="checkmark-circle-outline"></ion-icon>
+              Pasar lista
+            </a>
+          }
+          <a
+            class="btn-icon"
+            [routerLink]="['/pasos', f.paso.id, 'ensayos', f.ensayo.id, 'editar']"
+            [queryParams]="{ origen: '/ensayos' }"
+            title="Editar ensayo"
+          >
+            <ion-icon name="pencil-outline"></ion-icon>
+          </a>
+        </div>
+
+      </div>
+    } @empty {
+      <div class="empty-state">
+        <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
+        <h3>No hay ensayos con estos filtros</h3>
+        @if (hayFiltros) {
+          <p class="text-muted">Prueba a cambiar los filtros o a limpiarlos.</p>
+        } @else {
+          <p class="text-muted">Añade el primer ensayo con el botón "Nuevo ensayo".</p>
+        }
+      </div>
+    }
+  </div>
+
+</div>

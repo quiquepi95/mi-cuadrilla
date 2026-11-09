@@ -56,6 +56,8 @@ export const PID_RAUL      = 'a1b2c3d4-0001-0000-0000-000000000034';
 export const PID_EMILIO    = 'a1b2c3d4-0001-0000-0000-000000000035';
 export const PID_IGNACIO   = 'a1b2c3d4-0001-0000-0000-000000000036';
 export const PID_GONZALO   = 'a1b2c3d4-0001-0000-0000-000000000037';
+export const PID_BERNARDO  = 'a1b2c3d4-0001-0000-0000-000000000038';
+export const PID_ESTEBAN   = 'a1b2c3d4-0001-0000-0000-000000000039';
 
 @Injectable({ providedIn: 'root' })
 export class PersonasService {
@@ -99,6 +101,9 @@ export class PersonasService {
     { id: PID_EMILIO,    nombre: 'Emilio',     apellidos: 'Peña Zapata',      telefono: '603000111' },
     { id: PID_IGNACIO,   nombre: 'Ignacio',    apellidos: 'Soto Aranda',      telefono: '603100222' },
     { id: PID_GONZALO,   nombre: 'Gonzalo',    apellidos: 'Vidal Carmona',    telefono: '603200333' },
+    // Costaleros que no salen este año — en nómina sin paso asignado
+    { id: PID_BERNARDO,  nombre: 'Bernardo',   apellidos: 'Ruiz Herrera',     telefono: '603300444', alias: 'el Gordo' },
+    { id: PID_ESTEBAN,   nombre: 'Esteban',    apellidos: 'Campos Vázquez',   telefono: '603400555' },
   ];
 
   // ---- Generador de UUID v4 simple ----

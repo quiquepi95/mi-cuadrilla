@@ -1,207 +1,208 @@
-<div class="page-container" *ngIf="paso">
-
-  <div class="page-header">
-    <a [routerLink]="['/pasos', paso.id]" class="back-link">
-      <ion-icon name="arrow-back-outline"></ion-icon>
-      {{ paso.nombre }}
-    </a>
-    <h1 class="page-title">Añadir costalero</h1>
-    <p class="page-subtitle">Escribe el nombre para buscar en tu nómina o añadir uno nuevo</p>
+@if (paso) {
+  <div class="page-container">
+    <div class="page-header">
+      <a [routerLink]="['/pasos', paso.id]" class="back-link">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        {{ paso.nombre }}
+      </a>
+      <h1 class="page-title">Añadir costalero</h1>
+      <p class="page-subtitle">Escribe el nombre para buscar en tu nómina o añadir uno nuevo</p>
+    </div>
+    <form class="form-card" (ngSubmit)="guardar()">
+      <!-- ── NOMBRE con autocompletar ── -->
+      <div class="field-row">
+        <div class="field" [class.field-error]="nombreInvalido">
+          <label class="field-label">Nombre <span class="required">*</span></label>
+          <input
+            class="field-input"
+            type="text"
+            [(ngModel)]="nombre"
+            name="nombre"
+            placeholder="Nombre"
+            autocomplete="off"
+            (input)="onNombreInput()"
+            (blur)="cerrarSugerencias()"
+            />
+          @if (nombreInvalido) {
+            <span class="error-msg">Obligatorio</span>
+          }
+        </div>
+        <div class="field" [class.field-error]="apellidosInvalido">
+          <label class="field-label">Apellidos <span class="required">*</span></label>
+          <input
+            class="field-input"
+            type="text"
+            [(ngModel)]="apellidos"
+            name="apellidos"
+            placeholder="Apellidos"
+            autocomplete="off"
+            (input)="onApellidosInput()"
+            (blur)="cerrarSugerencias()"
+            />
+          @if (apellidosInvalido) {
+            <span class="error-msg">Obligatorio</span>
+          }
+        </div>
+      </div>
+      <!-- Sugerencias — debajo de los campos de nombre, nunca encima -->
+      @if (mostrarSugerencias) {
+        <div class="sugerencias-dropdown">
+          <div class="sugerencias-header">
+            <ion-icon name="people-outline"></ion-icon>
+            Costaleros en tu nómina que coinciden
+          </div>
+          @for (s of sugerencias; track s) {
+            <button
+              type="button"
+              class="sugerencia-item"
+              (click)="seleccionarSugerencia(s)"
+              >
+              <div class="sugerencia-avatar">{{ s.nombre[0] }}{{ s.apellidos[0] }}</div>
+              <div class="sugerencia-info">
+                <span class="sugerencia-nombre">{{ s.nombre }} {{ s.apellidos }}</span>
+                <span class="sugerencia-tel">
+                  <ion-icon name="call-outline"></ion-icon>
+                  {{ s.telefono }}
+                  @if (s.alias) {
+                    <span class="sugerencia-alias">· {{ s.alias }}</span>
+                  }
+                </span>
+              </div>
+              <ion-icon name="arrow-forward-outline" class="sugerencia-arrow"></ion-icon>
+            </button>
+          }
+        </div>
+      }
+      <!-- Badge persona vinculada -->
+      @if (personaSeleccionada) {
+        <div class="persona-vinculada">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          <span>Vinculado a <strong>{{ personaSeleccionada.nombre }} {{ personaSeleccionada.apellidos }}</strong> de tu nómina</span>
+          <button type="button" class="desvincular-btn" (click)="personaSeleccionada = undefined" title="Desvincular">
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        </div>
+      }
+      <!-- ── ALERTA DUPLICADO: teléfono de otra persona ── -->
+      @if (alertaDuplicado === 'telefono_existe' && personaDuplicada) {
+        <div class="alerta-duplicado alerta-error">
+          <ion-icon name="warning-outline"></ion-icon>
+          <div class="alerta-texto">
+            <strong>Este teléfono ya pertenece a {{ personaDuplicada.nombre }} {{ personaDuplicada.apellidos }}</strong>
+            <span>¿Es la misma persona?</span>
+          </div>
+          <div class="alerta-acciones">
+            <button type="button" class="alerta-btn-si" (click)="usarPersonaExistente()">Sí, usar este</button>
+            <button type="button" class="alerta-btn-no" (click)="ignorarAlerta()">No, son distintos</button>
+          </div>
+        </div>
+      }
+      <!-- ── ALERTA DUPLICADO: nombre similar, teléfono distinto ── -->
+      @if (alertaDuplicado === 'nombre_similar' && personaDuplicada) {
+        <div class="alerta-duplicado alerta-warning">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <div class="alerta-texto">
+            <strong>Nombre similar: {{ personaDuplicada.nombre }} {{ personaDuplicada.apellidos }}</strong>
+            <span>Teléfono registrado: {{ personaDuplicada.telefono }} · ¿Es la misma persona?</span>
+          </div>
+          <div class="alerta-acciones">
+            <button type="button" class="alerta-btn-si" (click)="usarPersonaExistente()">Sí, es el mismo</button>
+            <button type="button" class="alerta-btn-no" (click)="ignorarAlerta()">No, es distinto</button>
+          </div>
+        </div>
+      }
+      <!-- ── TELÉFONO ── -->
+      <div class="field">
+        <label class="field-label">
+          Teléfono
+          <span class="field-hint">Identificador único de la persona</span>
+        </label>
+        <input
+          class="field-input"
+          type="tel"
+          [(ngModel)]="telefono"
+          name="telefono"
+          placeholder="Ej: 600111222"
+          (blur)="onTelefonoBlur()"
+          [readonly]="!!personaSeleccionada"
+          [class.readonly]="!!personaSeleccionada"
+          />
+      </div>
+      <!-- ── ALIAS ── -->
+      <div class="field">
+        <label class="field-label">
+          Alias / Apodo
+          <span class="optional">(opcional)</span>
+        </label>
+        <input
+          class="field-input"
+          type="text"
+          [(ngModel)]="alias"
+          name="alias"
+          placeholder="Ej: el Largo, Manolo el Chico..."
+          [readonly]="!!personaSeleccionada"
+          [class.readonly]="!!personaSeleccionada"
+          />
+      </div>
+      <div class="form-divider">
+        <span>Datos específicos de este paso</span>
+      </div>
+      <!-- ── TRABAJADERA ── -->
+      <div class="field" [class.field-error]="trabajaderaInvalida">
+        <label class="field-label">Trabajadera <span class="required">*</span></label>
+        <select class="field-input field-select" [(ngModel)]="trabajaderaId" name="trabajadera">
+          <option value="" disabled>Selecciona trabajadera</option>
+          @for (t of trabajaderas; track t) {
+            <option [value]="t.id">
+              Trabajadera {{ t.numero }}
+            </option>
+          }
+        </select>
+        @if (trabajaderaInvalida) {
+          <span class="error-msg">Obligatorio</span>
+        }
+      </div>
+      <!-- ── CALZO ── -->
+      <div class="field">
+        <label class="field-label">
+          Calzo
+          <span class="optional">(cm, opcional — 0 si es el más alto de la trabajadera)</span>
+        </label>
+        <input
+          class="field-input"
+          type="number"
+          [(ngModel)]="calzo_cm"
+          name="calzo"
+          placeholder="Ej: 0, 0.5, 1, 1.5..."
+          min="0"
+          max="30"
+          step="0.5"
+          />
+      </div>
+      <!-- ── ASPIRANTE ── -->
+      <div class="field field-check">
+        <label class="check-label">
+          <input
+            type="checkbox"
+            [(ngModel)]="es_aspirante"
+            name="aspirante"
+            class="check-input"
+            />
+          <span class="check-custom"></span>
+          <div class="check-text">
+            <span class="check-title">Es aspirante</span>
+            <span class="check-desc text-muted">Se le mostrará la etiqueta "Aspirante" en el listado</span>
+          </div>
+        </label>
+      </div>
+      <!-- ── ACCIONES ── -->
+      <div class="form-actions">
+        <a [routerLink]="['/pasos', paso.id]" class="btn-outline">Cancelar</a>
+        <button type="submit" class="btn-primary" [disabled]="guardando">
+          <ion-icon name="person-add-outline"></ion-icon>
+          Añadir costalero
+        </button>
+      </div>
+    </form>
   </div>
-
-  <form class="form-card" (ngSubmit)="guardar()">
-
-    <!-- ── NOMBRE con autocompletar ── -->
-    <div class="field-row">
-
-      <div class="field autocomplete-wrap" [class.field-error]="nombreInvalido">
-        <label class="field-label">Nombre <span class="required">*</span></label>
-        <input
-          class="field-input"
-          type="text"
-          [(ngModel)]="nombre"
-          name="nombre"
-          placeholder="Nombre"
-          autocomplete="off"
-          (input)="onNombreInput()"
-          (blur)="cerrarSugerencias()"
-        />
-        <span class="error-msg" *ngIf="nombreInvalido">Obligatorio</span>
-      </div>
-
-      <div class="field autocomplete-wrap" [class.field-error]="apellidosInvalido">
-        <label class="field-label">Apellidos <span class="required">*</span></label>
-        <input
-          class="field-input"
-          type="text"
-          [(ngModel)]="apellidos"
-          name="apellidos"
-          placeholder="Apellidos"
-          autocomplete="off"
-          (input)="onApellidosInput()"
-          (blur)="cerrarSugerencias()"
-        />
-        <span class="error-msg" *ngIf="apellidosInvalido">Obligatorio</span>
-      </div>
-
-    </div>
-
-    <!-- Dropdown de sugerencias -->
-    <div class="sugerencias-dropdown" *ngIf="mostrarSugerencias">
-      <div class="sugerencias-header">
-        <ion-icon name="people-outline"></ion-icon>
-        Costaleros en tu nómina
-      </div>
-      <button
-        type="button"
-        class="sugerencia-item"
-        *ngFor="let s of sugerencias"
-        (click)="seleccionarSugerencia(s)"
-      >
-        <div class="sugerencia-avatar">{{ s.nombre[0] }}{{ s.apellidos[0] }}</div>
-        <div class="sugerencia-info">
-          <span class="sugerencia-nombre">{{ s.nombre }} {{ s.apellidos }}</span>
-          <span class="sugerencia-tel">
-            <ion-icon name="call-outline"></ion-icon>
-            {{ s.telefono }}
-            <span *ngIf="s.alias" class="sugerencia-alias">· {{ s.alias }}</span>
-          </span>
-        </div>
-        <ion-icon name="arrow-forward-outline" class="sugerencia-arrow"></ion-icon>
-      </button>
-    </div>
-
-    <!-- Badge persona vinculada -->
-    <div class="persona-vinculada" *ngIf="personaSeleccionada">
-      <ion-icon name="checkmark-circle-outline"></ion-icon>
-      <span>Vinculado a <strong>{{ personaSeleccionada.nombre }} {{ personaSeleccionada.apellidos }}</strong> de tu nómina</span>
-      <button type="button" class="desvincular-btn" (click)="personaSeleccionada = undefined" title="Desvincular">
-        <ion-icon name="close-outline"></ion-icon>
-      </button>
-    </div>
-
-    <!-- ── ALERTA DUPLICADO: teléfono de otra persona ── -->
-    <div class="alerta-duplicado alerta-error" *ngIf="alertaDuplicado === 'telefono_existe' && personaDuplicada">
-      <ion-icon name="warning-outline"></ion-icon>
-      <div class="alerta-texto">
-        <strong>Este teléfono ya pertenece a {{ personaDuplicada.nombre }} {{ personaDuplicada.apellidos }}</strong>
-        <span>¿Es la misma persona?</span>
-      </div>
-      <div class="alerta-acciones">
-        <button type="button" class="alerta-btn-si" (click)="usarPersonaExistente()">Sí, usar este</button>
-        <button type="button" class="alerta-btn-no" (click)="ignorarAlerta()">No, son distintos</button>
-      </div>
-    </div>
-
-    <!-- ── ALERTA DUPLICADO: nombre similar, teléfono distinto ── -->
-    <div class="alerta-duplicado alerta-warning" *ngIf="alertaDuplicado === 'nombre_similar' && personaDuplicada">
-      <ion-icon name="alert-circle-outline"></ion-icon>
-      <div class="alerta-texto">
-        <strong>Nombre similar: {{ personaDuplicada.nombre }} {{ personaDuplicada.apellidos }}</strong>
-        <span>Teléfono registrado: {{ personaDuplicada.telefono }} · ¿Es la misma persona?</span>
-      </div>
-      <div class="alerta-acciones">
-        <button type="button" class="alerta-btn-si" (click)="usarPersonaExistente()">Sí, es el mismo</button>
-        <button type="button" class="alerta-btn-no" (click)="ignorarAlerta()">No, es distinto</button>
-      </div>
-    </div>
-
-    <!-- ── TELÉFONO ── -->
-    <div class="field">
-      <label class="field-label">
-        Teléfono
-        <span class="field-hint">Identificador único de la persona</span>
-      </label>
-      <input
-        class="field-input"
-        type="tel"
-        [(ngModel)]="telefono"
-        name="telefono"
-        placeholder="Ej: 600111222"
-        (blur)="onTelefonoBlur()"
-        [readonly]="!!personaSeleccionada"
-        [class.readonly]="!!personaSeleccionada"
-      />
-    </div>
-
-    <!-- ── ALIAS ── -->
-    <div class="field">
-      <label class="field-label">
-        Alias / Apodo
-        <span class="optional">(opcional)</span>
-      </label>
-      <input
-        class="field-input"
-        type="text"
-        [(ngModel)]="alias"
-        name="alias"
-        placeholder="Ej: el Largo, Manolo el Chico..."
-        [readonly]="!!personaSeleccionada"
-        [class.readonly]="!!personaSeleccionada"
-      />
-    </div>
-
-    <div class="form-divider">
-      <span>Datos específicos de este paso</span>
-    </div>
-
-    <!-- ── TRABAJADERA ── -->
-    <div class="field" [class.field-error]="trabajaderaInvalida">
-      <label class="field-label">Trabajadera <span class="required">*</span></label>
-      <select class="field-input field-select" [(ngModel)]="trabajaderaId" name="trabajadera">
-        <option value="" disabled>Selecciona trabajadera</option>
-        <option *ngFor="let t of trabajaderas" [value]="t.id">
-          Trabajadera {{ t.numero }}
-          {{ t.diferencia_altura_cm === 0 ? '(referencia)' : '(+' + t.diferencia_altura_cm + ' cm)' }}
-        </option>
-      </select>
-      <span class="error-msg" *ngIf="trabajaderaInvalida">Obligatorio</span>
-    </div>
-
-    <!-- ── CALZO ── -->
-    <div class="field">
-      <label class="field-label">
-        Calzo
-        <span class="optional">(cm, opcional — 0 si es el más alto de la trabajadera)</span>
-      </label>
-      <input
-        class="field-input"
-        type="number"
-        [(ngModel)]="calzo_cm"
-        name="calzo"
-        placeholder="Ej: 0, 0.5, 1, 1.5..."
-        min="0"
-        max="30"
-        step="0.5"
-      />
-    </div>
-
-    <!-- ── ASPIRANTE ── -->
-    <div class="field field-check">
-      <label class="check-label">
-        <input
-          type="checkbox"
-          [(ngModel)]="es_aspirante"
-          name="aspirante"
-          class="check-input"
-        />
-        <span class="check-custom"></span>
-        <div class="check-text">
-          <span class="check-title">Es aspirante</span>
-          <span class="check-desc text-muted">Se le mostrará la etiqueta "Aspirante" en el listado</span>
-        </div>
-      </label>
-    </div>
-
-    <!-- ── ACCIONES ── -->
-    <div class="form-actions">
-      <a [routerLink]="['/pasos', paso.id]" class="btn-outline">Cancelar</a>
-      <button type="submit" class="btn-primary" [disabled]="guardando">
-        <ion-icon name="person-add-outline"></ion-icon>
-        Añadir costalero
-      </button>
-    </div>
-
-  </form>
-
-</div>
+}

@@ -69,31 +69,17 @@
 .error-msg { font-size: 0.75rem; color: var(--mc-danger); }
 
 // ---- Autocompletar ----
-.autocomplete-wrap { position: relative; }
-
 .sugerencias-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0; right: 0;
   background: var(--mc-bg-elevated);
-  border: 1px solid var(--mc-border);
+  border: 1px solid var(--mc-accent);
   border-radius: 10px;
-  box-shadow: var(--mc-shadow-md);
-  z-index: 200;
   overflow: hidden;
-  // Posición relativa al form-card, no al field
-  // Se recalcula por JS con posición absoluta desde el form-card
+  // Posición normal en el flujo del formulario, justo debajo del field-row
 }
 
-// Sobreescribir para que el dropdown salga del .field
-.form-card {
-  .sugerencias-dropdown {
-    position: absolute;
-    top: auto;
-    left: 24px;
-    right: 24px;
-    // se posiciona dinámicamente en el DOM debajo del campo nombre
-  }
+// Quitar el bloque de sobreescritura antiguo que usaba position:absolute
+.form-card .sugerencias-dropdown {
+  position: static;
 }
 
 .sugerencias-header {

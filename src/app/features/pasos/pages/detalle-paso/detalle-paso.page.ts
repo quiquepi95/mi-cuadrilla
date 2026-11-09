@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { MockDataService } from '../../../../core/services/mock-data.service';
+import { hoyLocal } from '../../../../core/utils/fechas';
 import { Paso, Trabajadera, Costalero, Ensayo } from '../../../../core/models';
 
 @Component({
@@ -13,6 +14,9 @@ import { Paso, Trabajadera, Costalero, Ensayo } from '../../../../core/models';
   styleUrls: ['./detalle-paso.page.scss'],
 })
 export class DetallePasoPage implements OnInit {
+  private route = inject(ActivatedRoute);
+  private mock = inject(MockDataService);
+
   paso?: Paso;
   trabajaderas: Trabajadera[] = [];
   costaleros: Costalero[] = [];       // solo activos, ordenados
@@ -22,18 +26,22 @@ export class DetallePasoPage implements OnInit {
   // Set de persona_id que aparecen en más de un paso
   private personasEnVariosPasos = new Set<string>();
 
-  constructor(private route: ActivatedRoute, private mock: MockDataService) {}
-
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id') || '1';
+    const tab = this.route.snapshot.queryParamMap.get('tab');
+    if (tab === 'trabajaderas' || tab === 'ensayos' || tab === 'auxiliares') {
+      this.activeTab = tab;
+    }
     this.paso        = this.mock.getPaso(id);
     this.trabajaderas = this.mock.getTrabajaderasByPaso(id);
-    this.costaleros  = this.mock.getCostalerosByPaso(id, true);
+    this.costaleros  = this.mock.getCostalerosByPaso(id, false)
+      // Activos primero; los inactivos van al final (el orden por calzo/apellido se mantiene)
+      .sort((a, b) => Number(b.activo) - Number(a.activo));
     this.ensayos     = this.mock.getEnsayosByPaso(id);
 
-    // Personas que aparecen en más de un paso (para badge "Varios pasos")
+    // Personas que están ACTIVAS en más de un paso (para badge "Varios pasos")
     const conteo = new Map<string, number>();
-    for (const c of this.mock.costaleros) {
+    for (const c of this.mock.costaleros.filter(x => x.activo)) {
       conteo.set(c.persona_id, (conteo.get(c.persona_id) ?? 0) + 1);
     }
     this.personasEnVariosPasos = new Set(
@@ -42,24 +50,33 @@ export class DetallePasoPage implements OnInit {
   }
 
   estaEnVariosPasos(c: Costalero): boolean {
-    return this.personasEnVariosPasos.has(c.persona_id);
+    return c.activo && this.personasEnVariosPasos.has(c.persona_id);
   }
 
-  /** Costaleros ACTIVOS de una trabajadera, ya ordenados por calzo+apellido */
+  /** Costaleros de una trabajadera (activos primero, luego inactivos) */
   getCostalerosDeTrabadera(tId: string): Costalero[] {
     return this.costaleros.filter(c => c.trabajadera_id === tId);
   }
 
-  getTotalCostalerosActivos(): number {
-    return this.costaleros.length;
+  /** Nº de costaleros ACTIVOS de una trabajadera (los inactivos no cuentan) */
+  contarActivos(tId: string): number {
+    return this.costaleros.filter(c => c.trabajadera_id === tId && c.activo).length;
   }
 
+  getTotalCostalerosActivos(): number {
+    return this.costaleros.filter(c => c.activo).length;
+  }
+
+  /** Siguiente ensayo por fecha: hoy o posterior, con fecha puesta y no cancelado */
   getProximoEnsayo(): Ensayo | undefined {
-    const hoy = new Date().toISOString().split('T')[0];
-    return this.ensayos.find(e => e.fecha >= hoy);
+    const hoy = hoyLocal(); // fecha LOCAL, no UTC
+
+    return this.ensayos
+      .filter(e => !e.cancelado && !!e.fecha && e.fecha >= hoy)
+      .sort((a, b) => a.fecha.localeCompare(b.fecha))[0];
   }
 
   formatCalzo(calzo: number): string {
-    return calzo === 0 ? 'Referencia' : `+${calzo} cm`;
+    return calzo === 0 ? '0 cm' : `+${calzo} cm`;
   }
 }

@@ -1,0 +1,173 @@
+<div class="page-container">
+
+  <!-- No encontrado -->
+  @if (!registro || !paso || !persona) {
+    <div class="empty-state">
+      <ion-icon name="person-outline" class="empty-icon"></ion-icon>
+      <p>Costalero no encontrado en este paso</p>
+      <a routerLink="/pasos" class="btn-outline">Volver a Mis Pasos</a>
+    </div>
+  }
+
+  @if (registro && paso && persona) {
+    <div class="page-header">
+      <a [routerLink]="['/pasos', paso.id]" class="back-link">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        {{ paso.nombre }}
+      </a>
+      <h1 class="page-title">{{ nombreCompleto }}</h1>
+      <p class="page-subtitle">
+        <span class="paso-dot" [style.background]="paso.color || 'var(--mc-accent)'"></span>
+        En {{ paso.nombre }}
+        @if (!registro.activo) {
+          <span class="badge-baja">
+            <ion-icon name="ban-outline"></ion-icon> Baja
+          </span>
+        }
+      </p>
+    </div>
+    <form class="form-card" (ngSubmit)="guardar()">
+      <!-- ── DATOS PERSONALES (solo lectura) ── -->
+      <div class="section-title">
+        <ion-icon name="person-circle-outline"></ion-icon>
+        Datos personales
+      </div>
+      <div class="personal-box">
+        <div class="personal-grid">
+          <div class="personal-item">
+            <span class="personal-label">Nombre</span>
+            <span class="personal-value">{{ persona.nombre }}</span>
+          </div>
+          <div class="personal-item">
+            <span class="personal-label">Apellidos</span>
+            <span class="personal-value">{{ persona.apellidos }}</span>
+          </div>
+          <div class="personal-item">
+            <span class="personal-label">Teléfono</span>
+            <span class="personal-value">{{ persona.telefono || '—' }}</span>
+          </div>
+          <div class="personal-item">
+            <span class="personal-label">Apodo</span>
+            <span class="personal-value">{{ persona.alias || '—' }}</span>
+          </div>
+        </div>
+        <div class="personal-footer">
+          <span class="personal-hint">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            Estos datos son comunes a todos los pasos. Se modifican desde el listado de costaleros.
+          </span>
+          <a
+            class="btn-outline btn-sm"
+            [routerLink]="['/costaleros', persona.id, 'editar']"
+            [queryParams]="{ origen: urlActual }"
+            >
+            <ion-icon name="pencil-outline"></ion-icon>
+            Editar datos personales
+          </a>
+        </div>
+      </div>
+      <!-- ── DATOS DE ESTE PASO ── -->
+      <div class="section-title">
+        <ion-icon name="flame-outline"></ion-icon>
+        Datos en este paso
+      </div>
+      @if (otrosPasos.length > 0) {
+        <div class="info-banner">
+          <ion-icon name="copy-outline"></ion-icon>
+          <div class="info-content">
+            <span class="info-title">También está activo en:</span>
+            <ul class="info-list">
+              @for (p of otrosPasos; track p) {
+                <li>
+                  <span class="paso-dot" [style.background]="p.color || 'var(--mc-accent)'"></span>
+                  {{ p.nombre }}
+                </li>
+              }
+            </ul>
+            <span class="info-warning">
+              Los cambios de esta pantalla <strong>solo afectan a {{ paso.nombre }}</strong>.
+            </span>
+          </div>
+        </div>
+      }
+      <!-- Trabajadera -->
+      <div class="field" [class.field-error]="trabajaderaInvalida">
+        <label class="field-label">Trabajadera <span class="required">*</span></label>
+        <select class="field-input field-select" [(ngModel)]="trabajaderaId" name="trabajadera">
+          <option value="" disabled>Selecciona trabajadera</option>
+          @for (t of trabajaderas; track t) {
+            <option [value]="t.id">
+              Trabajadera {{ t.numero }}
+            </option>
+          }
+        </select>
+        @if (trabajaderaInvalida) {
+          <span class="error-msg">Obligatorio</span>
+        }
+      </div>
+      <!-- Calzo -->
+      <div class="field">
+        <label class="field-label">
+          Calzo
+          <span class="optional">(cm — 0 si es el más alto de la trabajadera)</span>
+        </label>
+        <input
+          class="field-input"
+          type="number"
+          [(ngModel)]="calzo_cm"
+          name="calzo"
+          placeholder="Ej: 0, 0.5, 1, 1.5..."
+          min="0"
+          max="30"
+          step="0.5"
+          />
+      </div>
+      <!-- Aspirante -->
+      <div class="field field-check">
+        <label class="check-label">
+          <input type="checkbox" [(ngModel)]="es_aspirante" name="aspirante" class="check-input" />
+          <span class="check-custom"></span>
+          <div class="check-text">
+            <span class="check-title">Es aspirante</span>
+            <span class="check-desc">Se mostrará la etiqueta "Aspirante" en el listado</span>
+          </div>
+        </label>
+      </div>
+      <!-- Baja -->
+      <div class="field field-check">
+        <label class="check-label" [class.check-label-baja]="dadoDeBaja">
+          <input type="checkbox" [ngModel]="dadoDeBaja" (ngModelChange)="onBajaChange($event)" name="baja" class="check-input" />
+          <span class="check-custom"></span>
+          <div class="check-text">
+            <span class="check-title">Dado de baja en este paso</span>
+            <span class="check-desc">No cuenta en los totales ni en el pase de lista, pero queda en el histórico</span>
+          </div>
+        </label>
+      </div>
+      <!-- Notas -->
+      <div class="field">
+        <label class="field-label">
+          Notas
+          <span class="optional">(opcional — por ejemplo, el motivo de la baja)</span>
+        </label>
+        <input
+          class="field-input"
+          type="text"
+          [(ngModel)]="notas"
+          name="notas"
+          placeholder="Ej: Baja por lesión, aspirante descartado..."
+          autocomplete="off"
+          />
+      </div>
+      <!-- Acciones -->
+      <div class="form-actions">
+        <a [routerLink]="['/pasos', paso.id]" class="btn-outline">Cancelar</a>
+        <button type="submit" class="btn-primary">
+          <ion-icon name="save-outline"></ion-icon>
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  }
+
+</div>

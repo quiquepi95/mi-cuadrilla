@@ -1,0 +1,104 @@
+.page-container { padding: 24px; max-width: 580px; margin: 0 auto; }
+
+.page-header { margin-bottom: 24px; }
+
+.back-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: var(--mc-text-muted); font-size: 0.82rem; text-decoration: none;
+  background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 10px;
+  transition: color 0.15s;
+  &:hover { color: var(--mc-accent); }
+  ion-icon { font-size: 1rem; }
+}
+
+.page-title    { font-size: 1.5rem; font-weight: 700; color: var(--mc-text); margin: 0 0 4px; }
+.page-subtitle { font-size: 0.88rem; color: var(--mc-text-muted); margin: 0; }
+
+.form-card {
+  background: var(--mc-bg-surface); border: 1px solid var(--mc-border);
+  border-radius: 14px; padding: 24px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+
+// Banner informativo
+.info-banner {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: var(--mc-accent-subtle); border: 1px solid var(--mc-border);
+  border-radius: 8px; padding: 10px 12px;
+  font-size: 0.82rem; color: var(--mc-text-secondary);
+  ion-icon { font-size: 1.1rem; color: var(--mc-accent); flex-shrink: 0; margin-top: 1px; }
+  strong { color: var(--mc-text); }
+}
+
+// Campos
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.field-label {
+  font-size: 0.82rem; font-weight: 600; color: var(--mc-text-secondary);
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.field-hint { font-size: 0.72rem; color: var(--mc-accent); font-weight: 400; }
+.required   { color: var(--mc-danger); }
+.optional   { color: var(--mc-text-muted); font-weight: 400; font-size: 0.75rem; }
+
+.field-input {
+  background: var(--mc-bg); border: 1px solid var(--mc-border); border-radius: 8px;
+  padding: 10px 13px; color: var(--mc-text); font-size: 0.9rem; outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s; width: 100%; font-family: inherit;
+  &::placeholder { color: var(--mc-text-muted); }
+  &:focus { border-color: var(--mc-accent); box-shadow: 0 0 0 3px var(--mc-accent-subtle); }
+}
+
+.field-error .field-input { border-color: var(--mc-danger); }
+
+.error-msg { font-size: 0.75rem; color: var(--mc-danger); }
+
+// Conflicto de teléfono
+.alerta-conflicto {
+  display: flex; align-items: flex-start; gap: 7px;
+  background: var(--mc-danger-subtle); border: 1px solid var(--mc-danger);
+  border-radius: 7px; padding: 8px 10px;
+  font-size: 0.78rem; color: var(--mc-danger);
+  ion-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  strong { color: var(--mc-text); }
+}
+
+// Acciones
+.form-actions {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding-top: 4px; flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 20px; background: var(--mc-accent); color: #12121f;
+  border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 700;
+  cursor: pointer; transition: filter 0.15s, transform 0.1s; text-decoration: none;
+  ion-icon { font-size: 1rem; }
+  &:hover { filter: brightness(1.12); transform: translateY(-1px); }
+}
+
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 16px; background: transparent; color: var(--mc-text-secondary);
+  border: 1px solid var(--mc-border); border-radius: 8px;
+  font-size: 0.88rem; font-weight: 600; cursor: pointer; text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+  &:hover { border-color: var(--mc-accent); color: var(--mc-accent); }
+}
+
+// Empty state
+.empty-state {
+  text-align: center; padding: 48px 16px; color: var(--mc-text-muted);
+  .empty-icon { font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 12px; }
+  p { margin-bottom: 16px; }
+}
+
+@media (max-width: 480px) {
+  .page-container { padding: 16px; }
+  .form-card { padding: 16px; }
+  .field-row { grid-template-columns: 1fr; }
+  .form-actions { flex-direction: column-reverse; }
+  .btn-primary, .btn-outline { width: 100%; justify-content: center; }
+}

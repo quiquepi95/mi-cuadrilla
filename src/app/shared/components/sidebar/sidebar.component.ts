@@ -1,7 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
-import { CommonModule } from '@angular/common';
+
 import { ThemeService } from '../../../core/services/theme.service';
 
 interface NavItem {
@@ -13,11 +13,14 @@ interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule],
+  imports: [RouterModule, IonicModule],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
 })
 export class SidebarComponent implements OnInit {
+  themeService = inject(ThemeService);
+  router = inject(Router);
+
   collapsed = signal(false);
 
   navItems: NavItem[] = [
@@ -27,11 +30,6 @@ export class SidebarComponent implements OnInit {
     { label: 'Trabajaderas', icon: 'grid-outline',        route: '/trabajaderas'},
     { label: 'Auxiliares',   icon: 'person-add-outline',  route: '/auxiliares'  },
   ];
-
-  constructor(
-    public themeService: ThemeService,
-    public router: Router
-  ) {}
 
   ngOnInit() {
     this.themeService.init();

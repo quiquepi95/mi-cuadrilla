@@ -115,3 +115,43 @@
 @media (max-width: 480px) {
   .page-container { padding: 12px; }
 }
+
+// ---- Nota de ausencia / justificación ----
+.costalero-row { flex-wrap: wrap; }
+
+.nota-wrap { flex: 1 1 100%; padding-left: 48px; }
+
+.nota-input {
+  width: 100%;
+  background: var(--mc-bg);
+  border: 1px solid var(--mc-border);
+  border-radius: 7px;
+  padding: 7px 10px;
+  color: var(--mc-text);
+  font-size: 0.8rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &::placeholder { color: var(--mc-text-muted); }
+  &:focus { border-color: var(--mc-accent); box-shadow: 0 0 0 3px var(--mc-accent-subtle); }
+}
+
+.aviso-cancelado {
+  display: flex; align-items: center; gap: 6px;
+  margin: 8px 0 0; font-size: 0.82rem; color: var(--mc-text-secondary);
+  ion-icon { font-size: 1rem; color: var(--mc-accent); }
+}
+
+.btn-save.guardado { background: var(--mc-success); color: #fff; }
+
+// ---- Sin marcar ----
+.stat-card.stat-sin-marcar ion-icon { color: var(--mc-text-muted); }
+
+.save-bar { align-items: center; gap: 16px; flex-wrap: wrap; }
+
+.aviso-sin-marcar {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.85rem; font-weight: 600; color: var(--mc-warning);
+  ion-icon { font-size: 1.1rem; }
+}

@@ -361,7 +361,8 @@
   .page-container { padding: 16px; }
   .paso-hero-actions { width: 100%; }
   .tab-btn span { display: none; }
-  .ensayo-actions { display: none; }
+  .ensayo-card { flex-wrap: wrap; }
+  .ensayo-actions { width: 100%; justify-content: flex-end; }
 }
 
 .badge-multipasos {
@@ -378,4 +379,87 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   ion-icon { font-size: 0.7rem; }
+}
+
+// ---- Costalero dado de baja / descartado ----
+// Mismo aspecto que el resto, solo más apagado (la etiqueta "Baja" se mantiene legible)
+.costalero-item.inactivo {
+  .costalero-avatar,
+  .costalero-info { opacity: 0.45; }
+
+  &:hover {
+    .costalero-avatar,
+    .costalero-info { opacity: 0.7; }
+  }
+}
+
+.badge-baja {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--mc-bg-elevated);
+  color: var(--mc-text-secondary);
+  border: 1px solid var(--mc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  ion-icon { font-size: 0.7rem; }
+}
+
+// ---- Acciones del ensayo ----
+.ensayo-card { cursor: default; }
+
+.ensayo-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--mc-border);
+  background: transparent;
+  color: var(--mc-text-muted);
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  ion-icon { font-size: 0.95rem; }
+  &:hover { border-color: var(--mc-accent); color: var(--mc-accent); background: var(--mc-accent-subtle); }
+}
+
+// ---- Ensayo cancelado ----
+.ensayo-card.cancelado {
+  .ensayo-fecha-badge,
+  .ensayo-titulo,
+  .ensayo-lugar { opacity: 0.5; }
+}
+
+.badge-cancelado {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--mc-bg-elevated);
+  color: var(--mc-text-secondary);
+  border: 1px solid var(--mc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+
+.ensayo-motivo {
+  font-size: 0.78rem;
+  margin: 2px 0 0;
+  font-style: italic;
 }

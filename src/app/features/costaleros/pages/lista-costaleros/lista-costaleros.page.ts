@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { FormsModule } from '@angular/forms';
@@ -9,26 +9,23 @@ import { Costalero, Paso } from '../../../../core/models';
 
 interface PersonaConPasos extends Persona {
   pasos: { paso: Paso; costalero: Costalero }[];
-  activo: boolean;
 }
 
 @Component({
   selector: 'app-lista-costaleros',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule, FormsModule],
+  imports: [RouterModule, IonicModule, FormsModule],
   templateUrl: './lista-costaleros.page.html',
   styleUrls: ['./lista-costaleros.page.scss'],
 })
 export class ListaCostalerosPage implements OnInit {
+  private personasService = inject(PersonasService);
+  private mock = inject(MockDataService);
+
   personas: PersonaConPasos[] = [];
   duplicados: Persona[][] = [];
   filtro = '';
   mostrarSoloDuplicados = false;
-
-  constructor(
-    private personasService: PersonasService,
-    private mock: MockDataService,
-  ) {}
 
   ngOnInit() {
     this.cargar();
@@ -36,10 +33,10 @@ export class ListaCostalerosPage implements OnInit {
 
   cargar() {
     this.personas = this.personasService.personas.map(p => {
-      const pasos = this.mock.getPasosByPersona(p.id);
-      const activo = pasos.some(r => r.costalero.activo);
-      return { ...p, pasos, activo };
-    }).sort((a, b) => a.apellidos.localeCompare(b.apellidos, 'es'));
+      // Solo cuentan los pasos en los que la persona está ACTIVA
+      const pasos = this.mock.getPasosByPersona(p.id).filter(r => r.costalero.activo);
+      return { ...p, pasos };
+    }).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
     this.duplicados = this.personasService.getDuplicados();
   }

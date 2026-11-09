@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { MockDataService } from '../../../../core/services/mock-data.service';
@@ -8,14 +8,14 @@ import { Paso } from '../../../../core/models';
 @Component({
   selector: 'app-lista-pasos',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule],
+  imports: [RouterModule, IonicModule],
   templateUrl: './lista-pasos.page.html',
   styleUrls: ['./lista-pasos.page.scss'],
 })
 export class ListaPasosPage implements OnInit {
-  pasos: Paso[] = [];
+  private mock = inject(MockDataService);
 
-  constructor(private mock: MockDataService) {}
+  pasos: Paso[] = [];
 
   ngOnInit() {
     this.pasos = this.mock.getPasos();

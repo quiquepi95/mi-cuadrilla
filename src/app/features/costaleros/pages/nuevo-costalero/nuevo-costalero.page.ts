@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { FormsModule } from '@angular/forms';
@@ -14,11 +14,16 @@ export type AlertaDuplicado = 'telefono_existe' | 'nombre_similar' | null;
 @Component({
   selector: 'app-nuevo-costalero',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule, FormsModule],
+  imports: [RouterModule, IonicModule, FormsModule],
   templateUrl: './nuevo-costalero.page.html',
   styleUrls: ['./nuevo-costalero.page.scss'],
 })
 export class NuevoCostaleroPage implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private mock = inject(MockDataService);
+  private personas = inject(PersonasService);
+
 
   paso?: Paso;
   trabajaderas: Trabajadera[] = [];
@@ -47,13 +52,6 @@ export class NuevoCostaleroPage implements OnInit, OnDestroy {
 
   private busqueda$ = new Subject<string>();
   private destroy$  = new Subject<void>();
-
-  constructor(
-    private route:    ActivatedRoute,
-    private router:   Router,
-    private mock:     MockDataService,
-    private personas: PersonasService,
-  ) {}
 
   ngOnInit() {
     const pasoId = this.route.snapshot.paramMap.get('pasoId') || '';

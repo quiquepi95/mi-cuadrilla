@@ -1,195 +1,250 @@
-<div class="page-container" *ngIf="paso">
-
-  <!-- Header del paso con su color -->
-  <div class="paso-hero" [style.border-left-color]="paso.color || 'var(--mc-accent)'">
-    <div class="paso-hero-left">
-      <a routerLink="/pasos" class="back-link">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-        Mis Pasos
-      </a>
-      <div class="paso-avatar-large" [style.background]="paso.color || 'var(--mc-accent)'">
-        <ion-icon name="flame-outline"></ion-icon>
+@if (paso) {
+  <div class="page-container">
+    <!-- Header del paso con su color -->
+    <div class="paso-hero" [style.border-left-color]="paso.color || 'var(--mc-accent)'">
+      <div class="paso-hero-left">
+        <a routerLink="/pasos" class="back-link">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+          Mis Pasos
+        </a>
+        <div class="paso-avatar-large" [style.background]="paso.color || 'var(--mc-accent)'">
+          <ion-icon name="flame-outline"></ion-icon>
+        </div>
+        <div>
+          <h1 class="paso-title">{{ paso.nombre }}</h1>
+          <p class="paso-desc text-muted">{{ paso.descripcion }}</p>
+        </div>
       </div>
-      <div>
-        <h1 class="paso-title">{{ paso.nombre }}</h1>
-        <p class="paso-desc text-muted">{{ paso.descripcion }}</p>
-      </div>
-    </div>
-    <div class="paso-hero-actions">
-      <button class="btn-outline">
-        <ion-icon name="share-social-outline"></ion-icon>
-        Compartir
-      </button>
-      <button class="btn-outline">
-        <ion-icon name="settings-outline"></ion-icon>
-        Editar
-      </button>
-    </div>
-  </div>
-
-  <!-- Stats rápidas del paso -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <ion-icon name="grid-outline" class="stat-icon" [style.color]="paso.color || 'var(--mc-accent)'"></ion-icon>
-      <div class="stat-info">
-        <span class="stat-value">{{ trabajaderas.length }}</span>
-        <span class="stat-label">
-          trabajadera{{ trabajaderas.length !== 1 ? 's' : '' }}
-          <span class="stat-label-detail">de {{ paso.capacidad_trabajadera }} costaleros</span>
-        </span>
+      <div class="paso-hero-actions">
+        <a class="btn-outline" [routerLink]="['/pasos', paso.id, 'editar']">
+          <ion-icon name="settings-outline"></ion-icon>
+          Editar
+        </a>
       </div>
     </div>
-    <div class="stat-card">
-      <ion-icon name="people-outline" class="stat-icon" [style.color]="paso.color || 'var(--mc-accent)'"></ion-icon>
-      <div class="stat-info">
-        <span class="stat-value">{{ getTotalCostalerosActivos() }}</span>
-        <span class="stat-label">costaleros totales</span>
+    <!-- Stats rápidas del paso -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <ion-icon name="grid-outline" class="stat-icon" [style.color]="paso.color || 'var(--mc-accent)'"></ion-icon>
+        <div class="stat-info">
+          <span class="stat-value">{{ trabajaderas.length }}</span>
+          <span class="stat-label">
+            trabajadera{{ trabajaderas.length !== 1 ? 's' : '' }}
+            <span class="stat-label-detail">de {{ paso.capacidad_trabajadera }} costaleros</span>
+          </span>
+        </div>
       </div>
-    </div>
-    <div class="stat-card">
-      <ion-icon name="calendar-outline" class="stat-icon" [style.color]="paso.color || 'var(--mc-accent)'"></ion-icon>
-      <div class="stat-info">
-        <span class="stat-value">{{ ensayos.length }}</span>
-        <span class="stat-label">Ensayos</span>
+      <div class="stat-card">
+        <ion-icon name="people-outline" class="stat-icon" [style.color]="paso.color || 'var(--mc-accent)'"></ion-icon>
+        <div class="stat-info">
+          <span class="stat-value">{{ getTotalCostalerosActivos() }}</span>
+          <span class="stat-label">costaleros totales</span>
+        </div>
       </div>
-    </div>
-    <div class="stat-card" *ngIf="getProximoEnsayo() as proximo">
-      <ion-icon name="time-outline" class="stat-icon" [style.color]="paso.color || 'var(--mc-accent)'"></ion-icon>
-      <div class="stat-info">
-        <span class="stat-value">{{ proximo.fecha | date:'d MMM' }}</span>
-        <span class="stat-label">Próximo ensayo</span>
+      <div class="stat-card">
+        <ion-icon name="calendar-outline" class="stat-icon" [style.color]="paso.color || 'var(--mc-accent)'"></ion-icon>
+        <div class="stat-info">
+          <span class="stat-value">{{ ensayos.length }}</span>
+          <span class="stat-label">Ensayos</span>
+        </div>
       </div>
-    </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs-bar">
-    <button class="tab-btn" [class.active]="activeTab === 'trabajaderas'" (click)="activeTab = 'trabajaderas'">
-      <ion-icon name="grid-outline"></ion-icon> Trabajaderas
-    </button>
-    <button class="tab-btn" [class.active]="activeTab === 'ensayos'" (click)="activeTab = 'ensayos'">
-      <ion-icon name="calendar-outline"></ion-icon> Ensayos
-    </button>
-    <button class="tab-btn" [class.active]="activeTab === 'auxiliares'" (click)="activeTab = 'auxiliares'">
-      <ion-icon name="people-circle-outline"></ion-icon> Equipo
-    </button>
-  </div>
-
-  <!-- TAB: Trabajaderas y costaleros -->
-  <div *ngIf="activeTab === 'trabajaderas'" class="tab-content">
-    <div class="tab-actions">
-      <button class="btn-primary" [routerLink]="['/pasos', paso.id, 'costaleros', 'nuevo']">
-        <ion-icon name="person-add-outline"></ion-icon> Añadir costalero
-      </button>
-    </div>
-
-    <div class="trabajaderas-list">
-      <div *ngFor="let t of trabajaderas" class="trabajadera-block">
-
-        <div class="trabajadera-header">
-          <div class="trabajadera-title-area">
-            <div class="trabajadera-number" [style.background]="paso.color || 'var(--mc-accent)'">
-              {{ t.numero }}
-            </div>
-            <div>
-              <h3 class="trabajadera-title">Trabajadera {{ t.numero }}</h3>
-              <span class="trabajadera-meta text-muted">
-                Diferencia: <strong>{{ t.diferencia_altura_cm === 0 ? 'Referencia (0 cm)' : '+' + t.diferencia_altura_cm + ' cm' }}</strong>
-              </span>
-            </div>
-          </div>
-          <div class="trabajadera-count">
-            <span class="count-chip" [class.over]="getCostalerosDeTrabadera(t.id).length > paso.capacidad_trabajadera">
-              {{ getCostalerosDeTrabadera(t.id).length }}
-              <ion-icon name="person-outline"></ion-icon>
-            </span>
+      @if (getProximoEnsayo(); as proximo) {
+        <div class="stat-card">
+          <ion-icon name="time-outline" class="stat-icon" [style.color]="paso.color || 'var(--mc-accent)'"></ion-icon>
+          <div class="stat-info">
+            <span class="stat-value">{{ proximo.fecha | date:'d MMM' }}</span>
+            <span class="stat-label">Próximo ensayo</span>
           </div>
         </div>
-
-        <div class="costaleros-list" *ngIf="getCostalerosDeTrabadera(t.id).length > 0; else sinCostaleros">
-          <a
-            *ngFor="let c of getCostalerosDeTrabadera(t.id)"
-            class="costalero-item"
-            [routerLink]="['/pasos', paso.id, 'costaleros', c.id]"
-          >
-            <div class="costalero-avatar">
-              {{ c.nombre[0] }}{{ c.apellidos[0] }}
-            </div>
-            <div class="costalero-info">
-              <span class="costalero-nombre">{{ c.nombre }} {{ c.apellidos }}</span>
-              <span class="costalero-meta text-muted">
-                Calzo: {{ formatCalzo(c.calzo_cm) }}
-              </span>
-            </div>
-            <div class="costalero-badges">
-              <span class="badge-aspirante" *ngIf="c.es_aspirante">Aspirante</span>
-              <span class="badge-multipasos" *ngIf="estaEnVariosPasos(c)">
-                <ion-icon name="copy-outline"></ion-icon>
-                Varios pasos
-              </span>
-            </div>
-            <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
-          </a>
-        </div>
-
-        <ng-template #sinCostaleros>
-          <div class="empty-trabajadera">
-            <ion-icon name="person-add-outline"></ion-icon>
-            <span>Sin costaleros asignados</span>
+      }
+      @if (paso.fecha_procesion) {
+        <div class="stat-card">
+          <ion-icon name="flag-outline" class="stat-icon" [style.color]="paso.color || 'var(--mc-accent)'"></ion-icon>
+          <div class="stat-info">
+            <span class="stat-value">{{ paso.fecha_procesion | date:'d MMM' }}</span>
+            <span class="stat-label">Procesión</span>
           </div>
-        </ng-template>
-
-      </div>
+        </div>
+      }
     </div>
-  </div>
-
-  <!-- TAB: Ensayos -->
-  <div *ngIf="activeTab === 'ensayos'" class="tab-content">
-    <div class="tab-actions">
-      <button class="btn-primary">
-        <ion-icon name="calendar-outline"></ion-icon> Nuevo ensayo
+    <!-- Tabs -->
+    <div class="tabs-bar">
+      <button class="tab-btn" [class.active]="activeTab === 'trabajaderas'" (click)="activeTab = 'trabajaderas'">
+        <ion-icon name="grid-outline"></ion-icon> Trabajaderas
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'ensayos'" (click)="activeTab = 'ensayos'">
+        <ion-icon name="calendar-outline"></ion-icon> Ensayos
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'auxiliares'" (click)="activeTab = 'auxiliares'">
+        <ion-icon name="people-circle-outline"></ion-icon> Equipo
       </button>
     </div>
-
-    <div class="ensayos-list">
-      <a
-        *ngFor="let e of ensayos"
-        class="ensayo-card"
-        [routerLink]="['/ensayos', e.id, 'lista']"
-      >
-        <div class="ensayo-fecha-badge" [style.background]="paso.color || 'var(--mc-accent)'">
-          <span class="ensayo-dia">{{ e.fecha | date:'d' }}</span>
-          <span class="ensayo-mes">{{ e.fecha | date:'MMM' }}</span>
-        </div>
-        <div class="ensayo-info">
-          <h4 class="ensayo-titulo">{{ e.descripcion }}</h4>
-          <p class="ensayo-lugar text-muted">
-            <ion-icon name="location-outline"></ion-icon>
-            {{ e.lugar }}
-          </p>
-        </div>
-        <div class="ensayo-actions">
-          <button class="btn-outline-sm" (click)="$event.preventDefault()">
-            <ion-icon name="checkmark-circle-outline"></ion-icon>
-            Pasar lista
+    <!-- TAB: Trabajaderas y costaleros -->
+    @if (activeTab === 'trabajaderas') {
+      <div class="tab-content">
+        <div class="tab-actions">
+          <button class="btn-primary" [routerLink]="['/pasos', paso.id, 'costaleros', 'nuevo']">
+            <ion-icon name="person-add-outline"></ion-icon> Añadir costalero
           </button>
         </div>
-      </a>
-    </div>
+        <div class="trabajaderas-list">
+          @for (t of trabajaderas; track t) {
+            <div class="trabajadera-block">
+              <div class="trabajadera-header">
+                <div class="trabajadera-title-area">
+                  <div class="trabajadera-number" [style.background]="paso.color || 'var(--mc-accent)'">
+                    {{ t.numero }}
+                  </div>
+                  <div>
+                    <h3 class="trabajadera-title">Trabajadera {{ t.numero }}</h3>
+                    <span class="trabajadera-meta text-muted">
+                      Diferencia: <strong>{{ t.diferencia_altura_cm === 0 ? 'Referencia (0 cm)' : '+' + t.diferencia_altura_cm + ' cm' }}</strong>
+                    </span>
+                  </div>
+                </div>
+                <div class="trabajadera-count">
+                  <span class="count-chip" [class.over]="contarActivos(t.id) > paso.capacidad_trabajadera">
+                    {{ contarActivos(t.id) }}
+                    <ion-icon name="person-outline"></ion-icon>
+                  </span>
+                </div>
+              </div>
+              @if (getCostalerosDeTrabadera(t.id).length > 0) {
+                <div class="costaleros-list">
+                  @for (c of getCostalerosDeTrabadera(t.id); track c) {
+                    <a
+                      class="costalero-item"
+                      [class.inactivo]="!c.activo"
+                      [routerLink]="['/pasos', paso.id, 'costaleros', c.id]"
+                      >
+                      <div class="costalero-avatar">
+                        {{ c.nombre[0] }}{{ c.apellidos[0] }}
+                      </div>
+                      <div class="costalero-info">
+                        <span class="costalero-nombre">{{ c.nombre }} {{ c.apellidos }}</span>
+                        <span class="costalero-meta text-muted">
+                          Calzo: {{ formatCalzo(c.calzo_cm) }}
+                          @if (!c.activo && c.notas) {
+                            <span> · {{ c.notas }}</span>
+                          }
+                        </span>
+                      </div>
+                      <div class="costalero-badges">
+                        @if (!c.activo) {
+                          <span class="badge-baja">
+                            <ion-icon name="ban-outline"></ion-icon>
+                            Baja
+                          </span>
+                        }
+                        @if (c.es_aspirante) {
+                          <span class="badge-aspirante">Aspirante</span>
+                        }
+                        @if (estaEnVariosPasos(c)) {
+                          <span class="badge-multipasos">
+                            <ion-icon name="copy-outline"></ion-icon>
+                            Varios pasos
+                          </span>
+                        }
+                      </div>
+                      <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
+                    </a>
+                  }
+                </div>
+              } @else {
+                <div class="empty-trabajadera">
+                  <ion-icon name="person-add-outline"></ion-icon>
+                  <span>Sin costaleros asignados</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+    <!-- TAB: Ensayos -->
+    @if (activeTab === 'ensayos') {
+      <div class="tab-content">
+        <div class="tab-actions">
+          <a class="btn-primary" [routerLink]="['/pasos', paso.id, 'ensayos', 'nuevo']">
+            <ion-icon name="calendar-outline"></ion-icon> Nuevo ensayo
+          </a>
+        </div>
+        @if (ensayos.length === 0) {
+          <div class="empty-state">
+            <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
+            <h3>Sin ensayos todavía</h3>
+            <p class="text-muted">Añade las fechas de los ensayos de este paso.</p>
+          </div>
+        }
+        <div class="ensayos-list">
+          @for (e of ensayos; track e) {
+            <div
+              class="ensayo-card"
+              [class.cancelado]="e.cancelado"
+              >
+              <div class="ensayo-fecha-badge" [style.background]="paso.color || 'var(--mc-accent)'">
+                @if (e.fecha) {
+                  <span class="ensayo-dia">{{ e.fecha | date:'d' }}</span>
+                  <span class="ensayo-mes">{{ e.fecha | date:'MMM' }}</span>
+                } @else {
+                  <span class="ensayo-dia">?</span>
+                  <span class="ensayo-mes">s/f</span>
+                }
+              </div>
+              <div class="ensayo-info">
+                <h4 class="ensayo-titulo">
+                  {{ e.descripcion }}
+                  @if (e.cancelado) {
+                    <span class="badge-cancelado">Cancelado</span>
+                  }
+                </h4>
+                <p class="ensayo-lugar text-muted">
+                  <ion-icon name="location-outline"></ion-icon>
+                  {{ e.lugar || 'Sin lugar' }}
+                </p>
+                @if (e.cancelado && e.motivo_cancelacion) {
+                  <p class="ensayo-motivo text-muted">
+                    {{ e.motivo_cancelacion }}
+                  </p>
+                }
+              </div>
+              <div class="ensayo-actions">
+                @if (!e.cancelado) {
+                  <a
+                    class="btn-outline-sm"
+                    [routerLink]="['/ensayos', e.id, 'lista']"
+                    >
+                    <ion-icon name="checkmark-circle-outline"></ion-icon>
+                    Pasar lista
+                  </a>
+                }
+                <a
+                  class="btn-icon"
+                  [routerLink]="['/pasos', paso.id, 'ensayos', e.id, 'editar']"
+                  title="Editar ensayo"
+                  >
+                  <ion-icon name="pencil-outline"></ion-icon>
+                </a>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+    <!-- TAB: Auxiliares -->
+    @if (activeTab === 'auxiliares') {
+      <div class="tab-content">
+        <div class="tab-actions">
+          <button class="btn-primary">
+            <ion-icon name="person-add-outline"></ion-icon> Invitar auxiliar
+          </button>
+        </div>
+        <div class="empty-state">
+          <ion-icon name="people-circle-outline" class="empty-icon"></ion-icon>
+          <h3>Sin auxiliares aún</h3>
+          <p class="text-muted">Comparte este paso con tus auxiliares para que te ayuden a gestionarlo.</p>
+        </div>
+      </div>
+    }
   </div>
-
-  <!-- TAB: Auxiliares -->
-  <div *ngIf="activeTab === 'auxiliares'" class="tab-content">
-    <div class="tab-actions">
-      <button class="btn-primary">
-        <ion-icon name="person-add-outline"></ion-icon> Invitar auxiliar
-      </button>
-    </div>
-    <div class="empty-state">
-      <ion-icon name="people-circle-outline" class="empty-icon"></ion-icon>
-      <h3>Sin auxiliares aún</h3>
-      <p class="text-muted">Comparte este paso con tus auxiliares para que te ayuden a gestionarlo.</p>
-    </div>
-  </div>
-
-</div>
+}
