@@ -3,6 +3,7 @@ import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 
 import { ThemeService } from '../../../core/services/theme.service';
+import { APP_VERSION } from '../../../core/constants/version';
 
 interface NavItem {
   label: string;
@@ -22,12 +23,12 @@ export class SidebarComponent implements OnInit {
   router = inject(Router);
 
   collapsed = signal(false);
+  version = APP_VERSION;
 
   navItems: NavItem[] = [
     { label: 'Mis Pasos',    icon: 'flame-outline',       route: '/pasos'       },
     { label: 'Costaleros',   icon: 'people-outline',      route: '/costaleros'  },
     { label: 'Ensayos',      icon: 'calendar-outline',    route: '/ensayos'     },
-    { label: 'Trabajaderas', icon: 'grid-outline',        route: '/trabajaderas'},
     { label: 'Auxiliares',   icon: 'person-add-outline',  route: '/auxiliares'  },
   ];
 

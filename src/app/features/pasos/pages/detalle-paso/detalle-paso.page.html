@@ -68,7 +68,13 @@
       }
     </div>
     <!-- Tabs -->
-    <div class="tabs-bar">
+    <div class="tabs-wrap">
+      @if (tabsScrollIzq) {
+        <button class="tabs-flecha tabs-flecha-izq" aria-label="Ver pestañas anteriores" (click)="desplazarTabs(-1)">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </button>
+      }
+      <div class="tabs-bar" #tabsBar (scroll)="actualizarFlechasTabs()">
       <button class="tab-btn" [class.active]="activeTab === 'trabajaderas'" (click)="seleccionarTab('trabajaderas', $event)">
         <ion-icon name="grid-outline"></ion-icon> Trabajaderas
       </button>
@@ -84,6 +90,12 @@
       <button class="tab-btn" [class.active]="activeTab === 'auxiliares'" (click)="seleccionarTab('auxiliares', $event)">
         <ion-icon name="people-circle-outline"></ion-icon> Equipo
       </button>
+      </div>
+      @if (tabsScrollDer) {
+        <button class="tabs-flecha tabs-flecha-der" aria-label="Ver más pestañas" (click)="desplazarTabs(1)">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      }
     </div>
     <!-- TAB: Trabajaderas y costaleros -->
     @if (activeTab === 'trabajaderas') {

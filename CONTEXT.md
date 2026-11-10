@@ -19,6 +19,22 @@ El problema que resuelve: sustituir el uso de Excel en móvil (muy incómodo) po
 2. **Relevos:** el capataz hará más pruebas con las dos pestañas ("Relevos" y "Relevos (nuevo)") y decidirá cuál se queda (pregunta 16). Pendiente su respuesta sobre el paso "Cristo del Perdón" (pregunta 12).
 3. Preguntas 1 a 8 sin responder; mientras tanto vale el comportamiento descrito en cada una.
 4. Sin hacer todavía: Supabase, login, Equipo (auxiliares) y el build de producción (ver "Pendiente / Futuro").
+5. **Sesión 9 (v0.9.0):** menú sin "Trabajaderas" ni subtítulo "Semana Santa", flechas en las pestañas del detalle del paso, versión visible en el menú (sale de `package.json`) e icono del llamador del Gran Poder. APK de pruebas regenerado, **pendiente de probar en el móvil** (¿se lee bien el icono? ¿salen las flechas?).
+6. **Pendiente de la sesión 9:** guardar la vista "en fila" de los relevos de cada paso (cuando haya base de datos).
+
+### 🚀 Publicación y cuentas (decisiones y dudas, sin cerrar)
+- **Cuenta de desarrollador:** se usará el Gmail `enriqueprogrammer` (sirve para varias apps futuras, no solo cofrades). El canal de YouTube "Madrid entre costales" no se usa para publicar; se puede enlazar desde la ficha. Falta decidir el **nombre público** del desarrollador.
+- **Google Play:** cuota única de 25 $, sin vía gratuita. Se deja para más adelante. Comprobar antes las condiciones vigentes para cuentas personales (fase de pruebas con testers, datos de contacto públicos). El id `com.micuadrilla.app` no se puede cambiar una vez subido.
+- **App Store:** unos 99 $ al año, sin vía gratuita. Como particular se muestra el nombre legal; una marca exige cuenta de organización. Hace falta Mac o un servicio de compilación en la nube. Apple suele pedir también "Iniciar sesión con Apple" si hay login con Google. No existe carpeta `ios/` todavía.
+- **Mientras tanto:** pruebas con el **APK** y con una **PWA** gratuita (hosting gratis; en iPhone se instala desde Safari con "Añadir a pantalla de inicio"). La PWA hay que probarla en un iPhone real.
+
+### 🎨 Icono de la app
+- Elegido: **llamador del Gran Poder** (balaustres, volutas, escudo con corona y angelitos), dorado sobre fondo `#12121f`. Fuentes SVG en `resources/` (`icon-only`, `icon-foreground`, `icon-background`); otras variantes y la foto de referencia en `resources/variantes/`. Alternativa por si se ve muy cargado en el móvil: `resources/variantes/2-simplificado/`.
+- Regenerar: `npx @capacitor/assets generate --android --pwa --iconBackgroundColor "#12121f"` (después, revertir el reformateo que hace en `AndroidManifest.xml`). Favicon: `src/assets/icon/favicon.svg` (copia de `icon-only.svg`).
+- Manifiesto web: `src/manifest.webmanifest` (copiado al build desde `angular.json`).
+
+### 🔢 Versión
+- La versión sale de `package.json` y se muestra en el menú lateral (`v0.9.0`; en móvil el pie del menú está oculto). Se sube al terminar cada sesión y se anota en `CHANGELOG.md`.
 
 ### Datos de prueba actuales (se quitarán al conectar Supabase)
 | Paso | Trabajaderas | Relevos de prueba |

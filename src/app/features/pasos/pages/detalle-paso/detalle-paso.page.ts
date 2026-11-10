@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
@@ -23,6 +23,9 @@ export class DetallePasoPage implements OnInit {
   trabajaderas: Trabajadera[] = [];
   costaleros: Costalero[] = [];       // solo activos, ordenados
   ensayos: Ensayo[] = [];
+  tabsScrollIzq = false;
+  tabsScrollDer = false;
+  @ViewChild('tabsBar') tabsBar?: ElementRef<HTMLElement>;
   activeTab: 'trabajaderas' | 'ensayos' | 'relevos' | 'tablero' | 'auxiliares' = 'trabajaderas';
 
   // Set de persona_id que aparecen en más de un paso
@@ -53,7 +56,22 @@ export class DetallePasoPage implements OnInit {
     // Si se abre directamente en una pestaña que queda fuera de la barra (móvil), se deja a la vista
     setTimeout(() => {
       document.querySelector('.tabs-bar .tab-btn.active')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+      this.actualizarFlechasTabs();
     });
+  }
+
+  /** Muestra las flechas solo si hay pestañas ocultas a ese lado */
+  @HostListener('window:resize')
+  actualizarFlechasTabs() {
+    const barra = this.tabsBar?.nativeElement;
+    if (!barra) return;
+    this.tabsScrollIzq = barra.scrollLeft > 4;
+    this.tabsScrollDer = barra.scrollLeft + barra.clientWidth < barra.scrollWidth - 4;
+  }
+
+  desplazarTabs(direccion: 1 | -1) {
+    const barra = this.tabsBar?.nativeElement;
+    barra?.scrollBy({ left: direccion * barra.clientWidth * 0.6, behavior: 'smooth' });
   }
 
   estaEnVariosPasos(c: Costalero): boolean {

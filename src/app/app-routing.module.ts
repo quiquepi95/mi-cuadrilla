@@ -63,7 +63,6 @@ const routes: Routes = [
         path: 'pasos/:pasoId/costaleros/:id',
         loadComponent: () => import('./features/costaleros/pages/detalle-costalero/detalle-costalero.page').then(m => m.DetalleCostaleroPage),
       },
-      { path: 'trabajaderas', redirectTo: 'pasos', pathMatch: 'full' },
       { path: 'auxiliares',   redirectTo: 'pasos', pathMatch: 'full' },
     ],
   },

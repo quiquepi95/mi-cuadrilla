@@ -7,7 +7,6 @@
       @if (!collapsed()) {
         <div class="logo-text-area">
           <span class="logo-text">Mi Cuadrilla</span>
-          <span class="logo-sub">Semana Santa</span>
         </div>
       }
     </div>
@@ -54,6 +53,9 @@
         </div>
       }
     </a>
+    @if (!collapsed()) {
+      <span class="app-version">v{{ version }}</span>
+    }
   </div>
 
 </nav>

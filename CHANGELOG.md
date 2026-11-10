@@ -307,6 +307,27 @@ Cosas hechas pero **no comprobadas todavía en el navegador**. Marcar al probarl
 
 ---
 
+## [0.9.0] — 2026-11-10 · Sesión 9: Limpieza de menú, versión e icono
+
+### ✅ Hecho
+- Menú lateral: quitado "Trabajaderas" (y la carpeta vacía `features/trabajaderas`) y el subtítulo "Semana Santa" del logo
+- Título de la pestaña del navegador: "Mi Cuadrilla" (antes "Ionic App")
+- Detalle del paso: flechas a los lados de la barra de pestañas cuando hay más pestañas ocultas (solo aparecen si hace falta)
+- Versión visible en el menú lateral (`vX.Y.Z`), leída de `package.json` (`src/app/core/constants/version.ts`). `package.json` pasa a 0.9.0
+- Icono nuevo: **llamador del Gran Poder** (dorado sobre fondo oscuro). Fuentes en `resources/*.svg`, generado para Android (normal, redondo y adaptativo), PWA (`manifest.webmanifest`) y favicon SVG. Variantes descartadas y foto de referencia en `resources/variantes/`
+- APK de pruebas regenerado con todo lo anterior (`android\app\build\outputs\apk\debug\mi-cuadrilla.apk`)
+
+### 💬 Decisiones
+- Publicación: Google Play (25 $ únicos) y App Store (99 $/año) no tienen vía gratuita; de momento se prueba con APK y PWA. Cuenta de desarrollador: Gmail `enriqueprogrammer`; nombre público por decidir. Detalle en `CONTEXT.md`
+
+### 📍 Estado actual
+> Para regenerar iconos: ver `CONTEXT.md` (sección "Icono de la app"). El APK ya incluye el icono nuevo; falta probarlo en el móvil.
+
+### ⏭️ Pendiente
+- [ ] Guardar la vista "en fila" de los relevos de cada paso (cuando haya base de datos)
+
+---
+
 <!-- PLANTILLA para próximas sesiones:
 
 ## [0.x.0] — YYYY-MM-DD · Sesión N: Título

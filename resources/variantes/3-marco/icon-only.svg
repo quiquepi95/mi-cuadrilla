@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><defs><linearGradient id="oro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8c97a"/><stop offset="1" stop-color="#c9a84c"/></linearGradient></defs><rect width="1024" height="1024" fill="#12121f"/>
+    <circle cx="512" cy="512" r="410" fill="none" stroke="url(#oro)" stroke-width="22"/>
+    <g fill="url(#oro)" transform="translate(512 512) scale(0.7) translate(-512 -540)"><rect x="190" y="806" width="644" height="34" rx="12"/>
+    <ellipse cx="300" cy="792" rx="74" ry="14"/>
+    <ellipse cx="300" cy="736" rx="56" ry="50"/>
+    <rect x="276" y="654" width="48" height="50"/>
+    <ellipse cx="300" cy="650" rx="60" ry="14"/><g transform="translate(1024 0) scale(-1 1)">
+    <ellipse cx="300" cy="792" rx="74" ry="14"/>
+    <ellipse cx="300" cy="736" rx="56" ry="50"/>
+    <rect x="276" y="654" width="48" height="50"/>
+    <ellipse cx="300" cy="650" rx="60" ry="14"/></g>
+    <path d="M300 505 C 360 505 392 545 382 590 C 370 640 304 650 276 608 C 252 570 284 536 318 548 C 342 558 336 590 314 588" fill="none" stroke="url(#oro)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M250 540 C 214 500 226 450 262 432" fill="none" stroke="url(#oro)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M372 545 C 420 490 478 505 512 585" fill="none" stroke="url(#oro)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/><g transform="translate(1024 0) scale(-1 1)">
+    <path d="M300 505 C 360 505 392 545 382 590 C 370 640 304 650 276 608 C 252 570 284 536 318 548 C 342 558 336 590 314 588" fill="none" stroke="url(#oro)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M250 540 C 214 500 226 450 262 432" fill="none" stroke="url(#oro)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M372 545 C 420 490 478 505 512 585" fill="none" stroke="url(#oro)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <circle cx="408" cy="352" r="24"/>
+    <ellipse cx="418" cy="420" rx="30" ry="42"/>
+    <path d="M390 372 C 340 350 332 392 372 402 Z"/><g transform="translate(1024 0) scale(-1 1)">
+    <circle cx="408" cy="352" r="24"/>
+    <ellipse cx="418" cy="420" rx="30" ry="42"/>
+    <path d="M390 372 C 340 350 332 392 372 402 Z"/></g>
+    <path d="M512 705 C 462 640 474 590 512 566 C 550 590 562 640 512 705 Z"/>
+    <ellipse cx="480" cy="476" rx="40" ry="58"/>
+    <ellipse cx="544" cy="476" rx="40" ry="58" fill="none" stroke="url(#oro)" stroke-width="14"/>
+    <rect x="476" y="450" width="8" height="50" fill="#12121f"/><rect x="458" y="468" width="44" height="8" fill="#12121f"/>
+    <rect x="468" y="378" width="88" height="22" rx="6"/>
+    <path d="M474 378 C 474 320 550 320 550 378 Z"/>
+    <rect x="490" y="330" width="8" height="48" fill="#12121f" opacity=".45"/><rect x="526" y="330" width="8" height="48" fill="#12121f" opacity=".45"/>
+    <circle cx="512" cy="304" r="13"/>
+    <rect x="509" y="276" width="6" height="22"/><rect x="500" y="284" width="24" height="6"/></g></svg>
