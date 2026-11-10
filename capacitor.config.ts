@@ -10,6 +10,10 @@ const config: CapacitorConfig = {
       backgroundColor: '#1a1a2e',
       showSpinner: false,
     },
+    // La app tiene fondo oscuro: iconos claros en la barra de estado y en la de gestos
+    SystemBars: {
+      style: 'DARK',
+    },
   },
 };
 

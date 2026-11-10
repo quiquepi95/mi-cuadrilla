@@ -1,0 +1,89 @@
+// ---- Botones ----
+.btn-primary, .btn-outline {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: filter 0.15s, border-color 0.15s;
+  ion-icon { font-size: 1rem; }
+}
+.btn-primary { background: var(--mc-accent); color: var(--mc-bg); border: 1px solid var(--mc-accent); &:hover { filter: brightness(1.1); } }
+.btn-outline { background: transparent; color: var(--mc-text); border: 1px solid var(--mc-border); &:hover { border-color: var(--mc-accent); } }
+.btn-peligro { color: var(--mc-danger); &:hover { border-color: var(--mc-danger); } }
+.btn-link {
+  background: none; border: none; color: var(--mc-accent); font-size: 0.82rem; cursor: pointer;
+  font-family: inherit; padding: 8px 0; text-align: left;
+  &:hover { text-decoration: underline; }
+}
+
+// ---- Ventana ----
+.picker-fondo {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex; align-items: center; justify-content: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px));
+}
+
+.picker-panel {
+  position: relative; width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto;
+  background: var(--mc-bg-surface); border: 1px solid var(--mc-border);
+  border-radius: 14px; padding: 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.picker-cerrar {
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none; color: var(--mc-text-muted); cursor: pointer; padding: 6px; display: flex;
+  ion-icon { font-size: 1.3rem; }
+  &:hover { color: var(--mc-text); }
+}
+
+.picker-titulo { margin: 0 28px 4px 0; font-size: 1.05rem; font-weight: 700; color: var(--mc-text); }
+
+.picker-input {
+  background: var(--mc-bg); border: 1px solid var(--mc-border); border-radius: 8px;
+  padding: 9px 11px; color: var(--mc-text); font-size: 0.88rem; font-family: inherit; outline: none; width: 100%; box-sizing: border-box;
+  &:focus { border-color: var(--mc-accent); }
+}
+
+.picker-botones { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.picker-aviso {
+  display: flex; align-items: flex-start; gap: 8px; margin: 0;
+  font-size: 0.85rem; color: var(--mc-text);
+  ion-icon { font-size: 1.3rem; color: var(--mc-warning); flex-shrink: 0; }
+  &.picker-aviso-suave ion-icon { color: var(--mc-accent); }
+}
+.aviso-otra { color: var(--mc-warning); }
+
+.picker-pista { margin: -4px 0 0; font-size: 0.74rem; color: var(--mc-text-muted); }
+
+.candidatos { display: flex; flex-direction: column; gap: 5px; }
+
+.candidato {
+  display: flex; align-items: center; gap: 10px; text-align: left; width: 100%;
+  background: var(--mc-bg); border: 1px solid var(--mc-border); border-radius: 10px;
+  padding: 8px 10px; cursor: pointer; font-family: inherit; color: var(--mc-text);
+  &:hover { border-color: var(--mc-accent); }
+
+  // Quien ya está en el puesto: mismo tamaño y datos que el resto, más suave y con una línea en el borde.
+  // La línea es una sombra interior para que la fila no cambie de tamaño.
+  &.seleccionado {
+    background: var(--mc-accent-subtle);
+    box-shadow: inset 3px 0 0 var(--mc-accent);
+    .cand-info, .cand-asist { opacity: 0.8; }
+  }
+}
+
+.cand-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: var(--mc-accent); color: var(--mc-bg);
+  display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 700;
+}
+.cand-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cand-nombre { font-size: 0.88rem; font-weight: 600; }
+.cand-meta { font-size: 0.72rem; }
+.cand-asist { font-size: 0.7rem; color: var(--mc-text-muted); opacity: 0.8; flex-shrink: 0; }
+.cand-otra {
+  font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--mc-warning); border: 1px solid var(--mc-warning); border-radius: 10px; padding: 2px 7px; flex-shrink: 0;
+}
+.vacio-txt { text-align: center; font-size: 0.85rem; padding: 12px 0; margin: 0; }

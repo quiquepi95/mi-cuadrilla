@@ -1,0 +1,80 @@
+<div class="picker-fondo" (click)="cerrar.emit()">
+  <div class="picker-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="titulo">
+
+    <button class="picker-cerrar" (click)="cerrar.emit()" aria-label="Cerrar">
+      <ion-icon name="close-outline"></ion-icon>
+    </button>
+
+    <h2 class="picker-titulo">{{ titulo }}</h2>
+
+    @if (pendienteNota; as c) {
+      <!-- Costalero de otra trabajadera: aviso + nota opcional -->
+      <p class="picker-aviso">
+        <ion-icon name="warning-outline"></ion-icon>
+        <span>
+          <strong>{{ c.nombre }} {{ c.apellidos }}</strong> es de otra trabajadera y irá en la
+          {{ trabajadera?.numero }}. Puedes dejar una nota (por ejemplo: «va con calzo de 2 cm»).
+        </span>
+      </p>
+      <input class="picker-input" type="text" name="notaNueva" [(ngModel)]="notaNueva"
+             placeholder="Nota (opcional)" autocomplete="off" (keyup.enter)="colocarConNota()" />
+      <div class="picker-botones">
+        <button class="btn-primary" (click)="colocarConNota()">Colocar</button>
+        <button class="btn-outline" (click)="volverALista()">Atrás</button>
+      </div>
+    } @else if (editandoActual && actual) {
+      <!-- Quien ya está en el puesto: nota o dejarlo vacío -->
+      <p class="picker-aviso picker-aviso-suave">
+        <ion-icon name="person-outline"></ion-icon>
+        <span>
+          <strong>{{ actual.nombre }} {{ actual.apellidos }}</strong> está en este puesto.
+          @if (esDeOtraTrabajadera) { <span class="aviso-otra"> Es de la trabajadera {{ numeroOrigenActual }}.</span> }
+        </span>
+      </p>
+      <input class="picker-input" type="text" name="notaActual" [(ngModel)]="notaActual"
+             placeholder="Nota (ej: va con calzo de 2 cm)" autocomplete="off" (keyup.enter)="guardarNotaActual()" />
+      <div class="picker-botones">
+        <button class="btn-primary" (click)="guardarNotaActual()">Guardar nota</button>
+        <button class="btn-outline btn-peligro" (click)="quitarDelPuesto()">
+          <ion-icon name="close-circle-outline"></ion-icon> Dejar vacío
+        </button>
+        <button class="btn-outline" (click)="volverALista()">Atrás</button>
+      </div>
+    } @else {
+
+      <input class="picker-input" type="text" name="busqueda" [(ngModel)]="busqueda"
+             placeholder="Buscar costalero..." autocomplete="off" />
+
+      @if (actual) {
+        <p class="picker-pista">Toca al costalero marcado para cambiar su nota o dejar el puesto vacío.</p>
+      }
+
+      <div class="candidatos">
+        @for (c of candidatos; track c.costalero.id) {
+          <button class="candidato" [class.seleccionado]="c.esElActual" (click)="elegir(c)">
+            <span class="cand-avatar">{{ c.costalero.nombre[0] }}{{ c.costalero.apellidos[0] }}</span>
+            <span class="cand-info">
+              <span class="cand-nombre">{{ c.costalero.nombre }} {{ c.costalero.apellidos }}</span>
+              <span class="cand-meta text-muted">
+                T{{ c.numeroTrabajadera }} · calzo {{ formatCalzo(c.costalero.calzo_cm) }}
+              </span>
+            </span>
+            @if (asistenciaTexto(c.costalero); as asist) {
+              <span class="cand-asist" [title]="asistenciaTitulo(c.costalero)">{{ asist }}</span>
+            }
+            @if (!c.propia) { <span class="cand-otra">Otra trabajadera</span> }
+          </button>
+        }
+        @if (candidatos.length === 0) {
+          <p class="text-muted vacio-txt">No hay costaleros que mostrar.</p>
+        }
+      </div>
+
+      @if (!buscando) {
+        <button class="btn-link" (click)="verOtras = !verOtras">
+          {{ verOtras ? 'Ver solo los de esta trabajadera' : 'Ver costaleros de otras trabajaderas' }}
+        </button>
+      }
+    }
+  </div>
+</div>

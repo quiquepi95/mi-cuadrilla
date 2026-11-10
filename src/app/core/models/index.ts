@@ -101,6 +101,29 @@ export interface Asistencia {
   costalero?: Costalero;
 }
 
+// ---- RELEVO ----
+// Un relevo es una "foto" del paso: quién va en cada puesto de cada trabajadera durante un tramo.
+// El nombre no se guarda: el primero es "Salida", el último "Entrada" y los de en medio "Relevo N".
+export interface Relevo {
+  id: string;
+  paso_id: string;
+  orden: number;            // 1 = Salida ... N = Entrada
+  calle_inicio?: string;    // Calle donde empieza el relevo
+  calle_fin?: string;       // Calle donde termina el relevo
+  created_at: string;
+  updated_at: string;
+}
+
+// Un puesto ocupado en un relevo. Si no hay registro, el puesto está vacío.
+export interface AsignacionRelevo {
+  id: string;
+  relevo_id: string;
+  trabajadera_id: string;   // Trabajadera (fila) donde va en ESTE relevo (puede no ser la suya)
+  columna: number;          // Puesto dentro de la trabajadera (0, 1, 2...)
+  costalero_id: string;     // Nunca puede repetirse dentro del mismo relevo
+  nota?: string;            // Ej: "Va con calzo de 2 cm" (útil si va en una trabajadera que no es la suya)
+}
+
 // ---- DTOs para formularios ----
 export type CreatePasoDto = Omit<Paso, 'id' | 'owner_id' | 'created_at' | 'updated_at'>;
 export type UpdatePasoDto = Partial<CreatePasoDto>;

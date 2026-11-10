@@ -35,7 +35,9 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
         flex-direction: column;
       }
       .main-content {
-        padding-top: 64px;
+        /* barra superior fija (60 px) + barra de estado de Android; abajo, la barra de gestos */
+        padding-top: calc(64px + env(safe-area-inset-top, 0px));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
       }
     }
   `],

@@ -5,11 +5,13 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { MockDataService } from '../../../../core/services/mock-data.service';
 import { hoyLocal } from '../../../../core/utils/fechas';
 import { Paso, Trabajadera, Costalero, Ensayo } from '../../../../core/models';
+import { RelevosTabComponent } from '../../../relevos/components/relevos-tab/relevos-tab.component';
+import { TableroRelevosComponent } from '../../../relevos/components/tablero-relevos/tablero-relevos.component';
 
 @Component({
   selector: 'app-detalle-paso',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule],
+  imports: [CommonModule, RouterModule, IonicModule, RelevosTabComponent, TableroRelevosComponent],
   templateUrl: './detalle-paso.page.html',
   styleUrls: ['./detalle-paso.page.scss'],
 })
@@ -21,7 +23,7 @@ export class DetallePasoPage implements OnInit {
   trabajaderas: Trabajadera[] = [];
   costaleros: Costalero[] = [];       // solo activos, ordenados
   ensayos: Ensayo[] = [];
-  activeTab: 'trabajaderas' | 'ensayos' | 'auxiliares' = 'trabajaderas';
+  activeTab: 'trabajaderas' | 'ensayos' | 'relevos' | 'tablero' | 'auxiliares' = 'trabajaderas';
 
   // Set de persona_id que aparecen en más de un paso
   private personasEnVariosPasos = new Set<string>();
@@ -29,7 +31,7 @@ export class DetallePasoPage implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id') || '1';
     const tab = this.route.snapshot.queryParamMap.get('tab');
-    if (tab === 'trabajaderas' || tab === 'ensayos' || tab === 'auxiliares') {
+    if (tab === 'trabajaderas' || tab === 'ensayos' || tab === 'relevos' || tab === 'tablero' || tab === 'auxiliares') {
       this.activeTab = tab;
     }
     this.paso        = this.mock.getPaso(id);
@@ -47,10 +49,22 @@ export class DetallePasoPage implements OnInit {
     this.personasEnVariosPasos = new Set(
       [...conteo.entries()].filter(([, n]) => n > 1).map(([pid]) => pid)
     );
+
+    // Si se abre directamente en una pestaña que queda fuera de la barra (móvil), se deja a la vista
+    setTimeout(() => {
+      document.querySelector('.tabs-bar .tab-btn.active')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+    });
   }
 
   estaEnVariosPasos(c: Costalero): boolean {
     return c.activo && this.personasEnVariosPasos.has(c.persona_id);
+  }
+
+  /** Cambia de pestaña y, si la barra se desliza (móvil), deja la pestaña elegida a la vista */
+  seleccionarTab(tab: 'trabajaderas' | 'ensayos' | 'relevos' | 'tablero' | 'auxiliares', evento?: Event) {
+    this.activeTab = tab;
+    const boton = evento?.currentTarget as HTMLElement | null;
+    boton?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }
 
   /** Costaleros de una trabajadera (activos primero, luego inactivos) */

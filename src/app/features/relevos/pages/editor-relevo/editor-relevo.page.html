@@ -1,0 +1,134 @@
+@if (relevo && paso) {
+  <div class="page-container">
+
+    <div class="page-header">
+      <a [routerLink]="['/pasos', paso.id]" [queryParams]="{ tab: 'relevos' }" class="back-link">
+        <ion-icon name="arrow-back-outline"></ion-icon> Volver a relevos
+      </a>
+      <h1 class="page-title">{{ nombre }}</h1>
+      <p class="page-subtitle">{{ paso.nombre }}</p>
+
+      <!-- Moverse entre relevos -->
+      <div class="nav-relevos">
+        @if (anterior) {
+          <a [routerLink]="['/pasos', paso.id, 'relevos', anterior.id]">
+            <ion-icon name="chevron-back-outline"></ion-icon> {{ nombreAnterior }}
+          </a>
+        } @else { <span></span> }
+        @if (siguiente) {
+          <a [routerLink]="['/pasos', paso.id, 'relevos', siguiente.id]">
+            {{ nombreSiguiente }} <ion-icon name="chevron-forward-outline"></ion-icon>
+          </a>
+        }
+      </div>
+    </div>
+
+    <!-- Calles -->
+    <div class="calles">
+      <label class="campo">
+        <span>Calle donde empieza</span>
+        <input type="text" name="calleInicio" [(ngModel)]="calleInicio" (blur)="guardarCalles()" (keyup.enter)="guardarCalles()"
+               placeholder="Ej: Calle Feria" autocomplete="off" />
+      </label>
+      <label class="campo">
+        <span>Calle donde termina</span>
+        <input type="text" name="calleFin" [(ngModel)]="calleFin" (blur)="guardarCalles()" (keyup.enter)="guardarCalles()"
+               placeholder="Ej: Plaza del Duque" autocomplete="off" />
+      </label>
+    </div>
+
+    <!-- Resumen y acciones -->
+    <div class="resumen">
+      <span class="chip">{{ ocupados }}/{{ total }} puestos</span>
+      @if (vacios > 0) {
+        <span class="chip chip-warn"><ion-icon name="alert-circle-outline"></ion-icon> Faltan {{ vacios }}</span>
+      }
+    </div>
+
+    <div class="acciones">
+      <button class="btn-primary" (click)="sugerir()" [disabled]="vacios === 0">
+        <ion-icon name="sparkles-outline"></ion-icon> Sugerir relevo
+      </button>
+      @if (anterior) {
+        <button class="btn-outline" (click)="pedirAccion('copiar')">
+          <ion-icon name="copy-outline"></ion-icon> Copiar «{{ nombreAnterior }}»
+        </button>
+      }
+      @if (ocupados > 0) {
+        <button class="btn-outline" (click)="pedirAccion('vaciar')">
+          <ion-icon name="trash-outline"></ion-icon> Vaciar
+        </button>
+      }
+    </div>
+
+    @if (accionPendiente) {
+      <div class="confirmar">
+        <span>
+          {{ accionPendiente === 'copiar' ? 'Se sustituirá lo que ya has colocado' : 'Se quitarán los' }}
+          {{ accionPendiente === 'vaciar' ? ocupados + ' costaleros colocados' : '(' + ocupados + ' puestos)' }}. ¿Seguro?
+        </span>
+        <div class="confirmar-botones">
+          <button class="btn-primary" (click)="confirmarAccion()">Sí</button>
+          <button class="btn-outline" (click)="cancelarAccion()">Cancelar</button>
+        </div>
+      </div>
+    }
+
+    @if (mensaje) {
+      <p class="mensaje"><ion-icon name="information-circle-outline"></ion-icon> {{ mensaje }}</p>
+    }
+
+    <!-- Parihuela vista desde arriba -->
+    <div class="parihuela">
+      @for (fila of filas; track fila.trabajadera.id) {
+        <div class="fila">
+          <div class="fila-num" [style.background]="paso.color || 'var(--mc-accent)'" [title]="'Trabajadera ' + fila.trabajadera.numero">
+            {{ fila.trabajadera.numero }}
+          </div>
+          <div class="puestos" [style.--cols]="paso.capacidad_trabajadera">
+            @for (p of fila.puestos; track p.columna) {
+              <button
+                class="puesto"
+                [class.vacio]="!p.costalero"
+                [class.de-otra]="p.deOtra"
+                [title]="tituloPuesto(p)"
+                (click)="abrirPuesto(fila, p)"
+                >
+                @if (p.costalero) {
+                  <span class="p-ape">{{ primerApellido(p.costalero) }}</span>
+                  <span class="p-nom">{{ p.costalero.nombre }}</span>
+                  @if (p.deOtra) { <span class="p-badge">T{{ p.numeroOrigen }}</span> }
+                  @if (p.asignacion?.nota) { <ion-icon name="document-text-outline" class="p-nota"></ion-icon> }
+                  @if (asistenciaTexto(p.costalero); as asist) { <span class="p-asist">{{ asist }}</span> }
+                } @else {
+                  <ion-icon name="add-outline"></ion-icon>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (hayAsistencias) {
+      <p class="leyenda">El número pequeño de cada casilla es la asistencia a ensayos (asistidos / total).</p>
+    }
+
+  </div>
+
+  <!-- Ventana para elegir al costalero de un puesto -->
+  @if (seleccion; as s) {
+    <app-selector-costalero
+      [relevoId]="relevo.id"
+      [trabajaderaId]="s.trabajaderaId"
+      [columna]="s.columna"
+      (cambio)="refrescar()"
+      (cerrar)="cerrarSeleccion()"
+      ></app-selector-costalero>
+  }
+} @else {
+  <div class="page-container">
+    <p class="text-muted">No se ha encontrado este relevo.</p>
+    <a routerLink="/pasos" class="back-link">Ir a Mis Pasos</a>
+  </div>
+}

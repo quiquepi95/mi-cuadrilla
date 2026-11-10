@@ -14,17 +14,20 @@
         <ion-icon name="warning-outline"></ion-icon>
         <div>
           <strong>{{ duplicados.length }} posible{{ duplicados.length !== 1 ? 's' : '' }} duplicado{{ duplicados.length !== 1 ? 's' : '' }} detectado{{ duplicados.length !== 1 ? 's' : '' }}</strong>
-          <span>Hay costaleros con el mismo nombre pero distinto teléfono. Revísalos para fusionarlos si es la misma persona.</span>
+          <span>Hay costaleros con el mismo nombre pero distinto teléfono. Revísalos y dinos si es la misma persona.</span>
         </div>
       </div>
-      <button
-        class="btn-dup-revisar"
-        [class.active]="mostrarSoloDuplicados"
-        (click)="mostrarSoloDuplicados = !mostrarSoloDuplicados"
-        >
-        <ion-icon [name]="mostrarSoloDuplicados ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-        {{ mostrarSoloDuplicados ? 'Ver todos' : 'Ver duplicados' }}
+      <button class="btn-dup-revisar" (click)="abrirRevision()">
+        <ion-icon name="git-merge-outline"></ion-icon>
+        Revisar
       </button>
+    </div>
+  }
+
+  @if (mensaje) {
+    <div class="mensaje-ok">
+      <ion-icon name="checkmark-circle-outline"></ion-icon>
+      {{ mensaje }}
     </div>
   }
 
@@ -129,5 +132,52 @@
       </div>
     }
   </div>
+
+  <!-- Asistente de duplicados -->
+  @if (revisando && grupoActual.length > 1) {
+    <div class="dup-fondo" (click)="cerrarRevision()">
+      <div class="dup-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+
+        <button class="dup-cerrar" (click)="cerrarRevision()" aria-label="Cerrar">
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+
+        @if (paso === 'misma') {
+          <h2 class="dup-titulo">¿Son la misma persona?</h2>
+          <p class="dup-sub">Tienen el mismo nombre pero distinto teléfono.</p>
+        } @else {
+          <h2 class="dup-titulo">¿Cuál es el correcto?</h2>
+          <p class="dup-sub">Nos quedamos con sus datos. Los pasos de la otra ficha se juntan en esta.</p>
+        }
+
+        <div class="dup-fichas">
+          @for (p of grupoActual; track p.id) {
+            <div class="dup-ficha" [class.elegible]="paso === 'correcta'">
+              <div class="costalero-avatar">{{ p.nombre[0] }}{{ p.apellidos[0] }}</div>
+              <strong>{{ p.nombre }} {{ p.apellidos }}</strong>
+              @if (p.alias) { <span class="text-muted">«{{ p.alias }}»</span> }
+              <span class="dup-dato"><ion-icon name="call-outline"></ion-icon> {{ p.telefono || 'Sin teléfono' }}</span>
+              <span class="dup-dato"><ion-icon name="flame-outline"></ion-icon> {{ getPasosTexto(p) }}</span>
+              @if (paso === 'correcta') {
+                <button class="btn-dup btn-dup-primario" (click)="elegirCorrecta(p)">Este es el correcto</button>
+              }
+            </div>
+          }
+        </div>
+
+        @if (paso === 'misma') {
+          <div class="dup-acciones">
+            <button class="btn-dup btn-dup-primario" (click)="paso = 'correcta'">Sí, es la misma</button>
+            <button class="btn-dup" (click)="noSonLaMisma()">No, son distintas</button>
+          </div>
+        } @else {
+          <div class="dup-acciones">
+            <button class="btn-dup" (click)="paso = 'misma'">Atrás</button>
+          </div>
+        }
+
+      </div>
+    </div>
+  }
 
 </div>

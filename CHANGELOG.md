@@ -261,6 +261,52 @@ Cosas hechas pero **no comprobadas todavía en el navegador**. Marcar al probarl
 
 ---
 
+## [0.8.0] — 2026-11-09 · Sesión 8: Duplicados, relevos, APK de Android y datos de prueba
+
+### ✅ Hecho
+- **Fechas y meses en español** en toda la app (idioma `es` registrado en `app.module.ts`)
+- **Duplicados de costaleros** (listado global): asistente de dos preguntas, "¿son la misma persona?" y "¿cuál es el correcto?". Si es la misma, la ficha elegida absorbe los pasos y la asistencia de la otra (`MockDataService.fusionarPersonas`); si no, se deja de avisar de ese caso. Dos parejas de duplicados de prueba (Antonio García Pérez, Andrés Medina Ríos)
+- **Trabajaderas de los pasos**: Cristo 10 de 6, Esperanza 7 de 5, Gran Poder 7 de 6. Dos pasos nuevos de prueba: **Cristo del Perdón** y **Virgen de la Alegría** (4×3)
+- **Relevos** (pestaña nueva del paso). Detalle completo en `CONTEXT.md`:
+  - De 2 a 20 relevos; Salida, Relevo 1, 2... y Entrada. Al reducir se quitan los de en medio; al aumentar se añaden antes de la Entrada, con aviso en ambos casos
+  - Cuadrícula de la parihuela (filas = trabajaderas), calles de inicio y fin, nota si va en una trabajadera que no es la suya, copiar el anterior, vaciar
+  - **Sugerir relevo** (sin IA): quien no hace la Salida hace la Entrada; trabajaderas dobladas = cambio completo; menos relevos hechos, descanso, mejor asistencia, menos pasos que saca y azar. Cada costalero mantiene su puesto durante toda la procesión
+  - **Asistencia a ensayos** discreta en cada casilla y en el selector de costalero
+  - Pestaña **"Relevos (nuevo)"** (prueba): todos los relevos a la vez con acciones por icono, en vista Cuadrícula o Fila deslizante. Convive con la anterior para compararlas
+  - Ventana de selección de costalero compartida (`SelectorCostaleroComponent`): quien ya está en el puesto sale en la lista con el mismo tamaño que los demás, más suave y con una línea de color en el borde
+- **Datos de prueba**: relevos de ejemplo en los pasos 2 a 5 (Cristo sin relevos a propósito), costaleros extra y **ensayos con listas pasadas en todos los pasos** (completas y a medias)
+- **App de Android (APK de pruebas)**: JDK 21 + Android SDK instalados, proyecto `android/` creado con Capacitor y APK `mi-cuadrilla.apk`. Cómo generarlo, en `CONTEXT.md`
+  - Zona segura: la barra superior y el contenido respetan la barra de estado y la de gestos; botones del menú de 44 px; iconos claros en la barra de estado
+  - **Botón atrás** del móvil: cierra la ventana abierta, vuelve a la pantalla anterior y, en Mis Pasos, pregunta "¿Salir de la aplicación?"
+  - La barra de pestañas de un paso **se desliza** en el móvil
+- **Decisiones**: cada capataz ve solo su propio catálogo de costaleros; un auxiliar puede añadir a su nómina a un costalero de un paso donde es auxiliar escribiendo su nombre (copia, sin que el dueño pueda prohibirlo); se premia primero la asistencia y después los pasos que saca; el menú del móvil se queda arriba
+
+### 🐛 Problemas conocidos
+- `npm run build` (producción) **falla** por el límite de 4 kB de estilos por componente (`anyComponentStyle`); para el APK se usa el build de desarrollo. Hay que resolverlo antes de publicar en Google Play
+- `ng test` no arranca ("no se encuentra `vitest`") aunque está instalado. La lógica de relevos se comprobó con scripts temporales fuera del proyecto
+- Todo lo de esta sesión está **sin commit** en git; la carpeta `android/` tampoco está versionada
+
+### 🧪 Pruebas pendientes de revisar
+- [ ] Duplicados: las dos parejas de prueba se resuelven bien (fusionar a los Antonios, descartar a los Andrés) y el aviso desaparece
+- [ ] Relevos: Virgen de la Alegría (A, B, A, B) con cada costalero siempre en el mismo puesto
+- [ ] Relevos: Cristo del Perdón, con la asistencia visible, y confirmar si lo que se veía era el caso de la trabajadera 1 (pregunta 12 de `CONTEXT.md`)
+- [ ] Pestaña "Relevos (nuevo)": comparar con la anterior y decidir cuál se queda
+- [ ] Móvil: menú deslizable de pestañas, botón atrás y alerta de salida, selector de costalero
+- [ ] Ensayos: las listas a medias salen como "Lista incompleta" y las completas no
+
+### 📍 Estado actual
+> La parte de relevos funciona con datos de prueba y hay dos versiones de la pantalla para elegir. La app ya se puede probar en el móvil con un APK. Sigue sin haber Supabase, login ni Equipo.
+
+### ⏭️ Próxima sesión
+- [ ] Tomar las decisiones de duplicados **de dos en dos** (grupos de 3 o más fichas del mismo nombre)
+- [ ] Decidir qué pestaña de relevos se queda y borrar la otra
+- [ ] Responder las preguntas abiertas de `CONTEXT.md` (relevos, sugerencia, trabajaderas dobladas)
+- [ ] Resolver el build de producción (límites de estilos)
+- [ ] Hacer commit de lo hecho; decidir si `android/` se versiona
+- [ ] Conectar Supabase, login con Google y Equipo (invitación por WhatsApp + permisos)
+
+---
+
 <!-- PLANTILLA para próximas sesiones:
 
 ## [0.x.0] — YYYY-MM-DD · Sesión N: Título

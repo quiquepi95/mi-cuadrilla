@@ -28,6 +28,10 @@ const routes: Routes = [
         loadComponent: () => import('./features/pasos/pages/editar-paso/editar-paso.page').then(m => m.EditarPasoPage),
       },
       {
+        path: 'pasos/:pasoId/relevos/:id',
+        loadComponent: () => import('./features/relevos/pages/editor-relevo/editor-relevo.page').then(m => m.EditorRelevoPage),
+      },
+      {
         path: 'pasos/:pasoId/ensayos/nuevo',
         loadComponent: () => import('./features/ensayos/pages/formulario-ensayo/formulario-ensayo.page').then(m => m.FormularioEnsayoPage),
       },

@@ -69,13 +69,19 @@
     </div>
     <!-- Tabs -->
     <div class="tabs-bar">
-      <button class="tab-btn" [class.active]="activeTab === 'trabajaderas'" (click)="activeTab = 'trabajaderas'">
+      <button class="tab-btn" [class.active]="activeTab === 'trabajaderas'" (click)="seleccionarTab('trabajaderas', $event)">
         <ion-icon name="grid-outline"></ion-icon> Trabajaderas
       </button>
-      <button class="tab-btn" [class.active]="activeTab === 'ensayos'" (click)="activeTab = 'ensayos'">
+      <button class="tab-btn" [class.active]="activeTab === 'ensayos'" (click)="seleccionarTab('ensayos', $event)">
         <ion-icon name="calendar-outline"></ion-icon> Ensayos
       </button>
-      <button class="tab-btn" [class.active]="activeTab === 'auxiliares'" (click)="activeTab = 'auxiliares'">
+      <button class="tab-btn" [class.active]="activeTab === 'relevos'" (click)="seleccionarTab('relevos', $event)">
+        <ion-icon name="swap-horizontal-outline"></ion-icon> Relevos
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'tablero'" (click)="seleccionarTab('tablero', $event)">
+        <ion-icon name="albums-outline"></ion-icon> Relevos (nuevo)
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'auxiliares'" (click)="seleccionarTab('auxiliares', $event)">
         <ion-icon name="people-circle-outline"></ion-icon> Equipo
       </button>
     </div>
@@ -230,6 +236,14 @@
           }
         </div>
       </div>
+    }
+    <!-- TAB: Relevos -->
+    @if (activeTab === 'relevos') {
+      <app-relevos-tab [pasoId]="paso.id" [color]="paso.color || 'var(--mc-accent)'"></app-relevos-tab>
+    }
+    <!-- TAB: Relevos (nuevo): todos los relevos a la vez -->
+    @if (activeTab === 'tablero') {
+      <app-tablero-relevos [pasoId]="paso.id" [color]="paso.color || 'var(--mc-accent)'"></app-tablero-relevos>
     }
     <!-- TAB: Auxiliares -->
     @if (activeTab === 'auxiliares') {

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { PERSONAS_PRUEBA_RELEVOS } from './datos-prueba-relevos';
 
 // ============================================================
 // PERSONA — identidad real de un costalero
@@ -58,6 +59,10 @@ export const PID_IGNACIO   = 'a1b2c3d4-0001-0000-0000-000000000036';
 export const PID_GONZALO   = 'a1b2c3d4-0001-0000-0000-000000000037';
 export const PID_BERNARDO  = 'a1b2c3d4-0001-0000-0000-000000000038';
 export const PID_ESTEBAN   = 'a1b2c3d4-0001-0000-0000-000000000039';
+// Duplicado de prueba de PID_ANTONIO (mismo nombre, teléfono distinto). Se quitará al probar la fusión.
+export const PID_ANTONIO_DUP = 'a1b2c3d4-0001-0000-0000-000000000040';
+// Segundo duplicado de prueba, de PID_ANDRES: parece un homónimo real (teléfono muy distinto)
+export const PID_ANDRES_DUP  = 'a1b2c3d4-0001-0000-0000-000000000041';
 
 @Injectable({ providedIn: 'root' })
 export class PersonasService {
@@ -104,6 +109,12 @@ export class PersonasService {
     // Costaleros que no salen este año — en nómina sin paso asignado
     { id: PID_BERNARDO,  nombre: 'Bernardo',   apellidos: 'Ruiz Herrera',     telefono: '603300444', alias: 'el Gordo' },
     { id: PID_ESTEBAN,   nombre: 'Esteban',    apellidos: 'Campos Vázquez',   telefono: '603400555' },
+    // Posible duplicado de Antonio García Pérez (600111222)
+    { id: PID_ANTONIO_DUP, nombre: 'Antonio',  apellidos: 'García Pérez',     telefono: '600111223', alias: 'Anto' },
+    // Posible homónimo de Andrés Medina Ríos (601500666)
+    { id: PID_ANDRES_DUP,  nombre: 'Andrés',   apellidos: 'Medina Ríos',      telefono: '611222333' },
+    // Costaleros de prueba para los relevos (Gran Poder y pasos 4 y 5)
+    ...PERSONAS_PRUEBA_RELEVOS,
   ];
 
   // ---- Generador de UUID v4 simple ----
@@ -137,7 +148,14 @@ export class PersonasService {
   }
 
   // ---- Detectar posibles duplicados ----
-  // Mismo nombre+apellidos pero distinto teléfono → posible duplicado
+  // Mismo nombre+apellidos pero distinto teléfono → posible duplicado.
+  // Los grupos que el capataz ya marcó como "no son la misma persona" no se vuelven a proponer.
+  private descartados = new Set<string>();
+
+  private claveGrupo(grupo: Persona[]): string {
+    return grupo.map(p => p.id).sort().join('|');
+  }
+
   getDuplicados(): Persona[][] {
     const grupos: Map<string, Persona[]> = new Map();
     for (const p of this.personas) {
@@ -145,7 +163,12 @@ export class PersonasService {
       if (!grupos.has(clave)) grupos.set(clave, []);
       grupos.get(clave)!.push(p);
     }
-    return [...grupos.values()].filter(g => g.length > 1);
+    return [...grupos.values()].filter(g => g.length > 1 && !this.descartados.has(this.claveGrupo(g)));
+  }
+
+  /** "No son la misma persona": deja de avisar de este grupo */
+  descartarDuplicado(grupo: Persona[]) {
+    this.descartados.add(this.claveGrupo(grupo));
   }
 
   // ---- Crear persona nueva ----
@@ -164,9 +187,15 @@ export class PersonasService {
   }
 
   // ---- Fusionar duplicados ----
+  // Solo toca el catálogo. Para mover también los costaleros usa MockDataService.fusionarPersonas()
   fusionar(idMantener: string, idEliminar: string) {
+    const mantener = this.buscarPorId(idMantener);
+    const eliminar = this.buscarPorId(idEliminar);
+    // Si la correcta no tiene alias y la otra sí, no se pierde
+    if (mantener && eliminar && !mantener.alias && eliminar.alias) {
+      mantener.alias = eliminar.alias;
+    }
     this.personas = this.personas.filter(p => p.id !== idEliminar);
-    // Los costaleros que usaban idEliminar deben actualizar su persona_id externamente
     return idMantener;
   }
 }

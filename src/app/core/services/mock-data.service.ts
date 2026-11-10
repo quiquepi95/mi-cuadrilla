@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Paso, Trabajadera, Costalero, Ensayo, Asistencia } from '../models';
 import { PersonasService } from './personas.service';
 import { hoyLocal } from '../utils/fechas';
+import { COSTALEROS_PRUEBA_RELEVOS, ENSAYOS_PRUEBA_RELEVOS, generarAsistenciasPrueba } from './datos-prueba-relevos';
 import {
   PID_ANTONIO, PID_MANUEL, PID_FRANCISCO, PID_JOSE, PID_ENRIQUE,
   PID_CARLOS, PID_MIGUEL, PID_LUIS, PID_GONZALO2,
@@ -14,7 +15,7 @@ import {
   PID_HECTOR, PID_DANIEL, PID_ALEJANDRO,
   PID_NACHO, PID_GERMAN,
   PID_MARCOS, PID_RAUL, PID_EMILIO,
-  PID_IGNACIO, PID_GONZALO,
+  PID_IGNACIO, PID_GONZALO, PID_ANTONIO_DUP, PID_ANDRES_DUP,
 } from './personas.service';
 
 // ============================================================
@@ -41,6 +42,7 @@ const ASISTENCIAS_PRUEBA_EXTRA: Asistencia[] = [
   { id: 'x11', ensayo_id: 'e12', costalero_id: 'c11', estado: 'presente',    notas: '',        created_at: '' },
   { id: 'x12', ensayo_id: 'e12', costalero_id: 'c12', estado: 'presente',    notas: '',        created_at: '' },
   { id: 'x13', ensayo_id: 'e12', costalero_id: 'c13', estado: 'presente',    notas: '',        created_at: '' },
+  { id: 'x14', ensayo_id: 'e12', costalero_id: 'c14', estado: 'presente',    notas: '',        created_at: '' },
   { id: 'x1', ensayo_id: 'e12', costalero_id: 'c1', estado: 'presente',    notas: '',      created_at: '' },
   { id: 'x2', ensayo_id: 'e12', costalero_id: 'c2', estado: 'presente',    notas: '',      created_at: '' },
   { id: 'x3', ensayo_id: 'e12', costalero_id: 'c5', estado: 'justificada', notas: 'Viaje', created_at: '' },
@@ -57,9 +59,12 @@ export class MockDataService {
   private personas = inject(PersonasService);
 
   pasos: Paso[] = [
-    { id: '1', nombre: 'Cristo de la Buena Muerte',           descripcion: 'Paso de misterio. Hermandad de los Estudiantes.', imagen_url: '', owner_id: 'user-1', num_trabajaderas: 4, capacidad_trabajadera: 8, color: '#c9a84c', created_at: '2026-01-01', updated_at: '2026-01-01' },
-    { id: '2', nombre: 'Virgen de la Esperanza',              descripcion: 'Paso de palio. La Macarena.',                     imagen_url: '', owner_id: 'user-1', num_trabajaderas: 3, capacidad_trabajadera: 6, color: '#7b3f9e', created_at: '2026-01-01', updated_at: '2026-01-01' },
-    { id: '3', nombre: 'Nuestro Padre Jesús del Gran Poder',  descripcion: 'Paso de misterio. El Gran Poder.',                imagen_url: '', owner_id: 'user-1', num_trabajaderas: 5, capacidad_trabajadera: 9, color: '#8b0000', created_at: '2026-01-01', updated_at: '2026-01-01' },
+    { id: '1', nombre: 'Cristo de la Buena Muerte',           descripcion: 'Paso de misterio. Hermandad de los Estudiantes.', imagen_url: '', owner_id: 'user-1', num_trabajaderas: 10, capacidad_trabajadera: 6, color: '#c9a84c', created_at: '2026-01-01', updated_at: '2026-01-01' },
+    { id: '2', nombre: 'Virgen de la Esperanza',              descripcion: 'Paso de palio. La Macarena.',                     imagen_url: '', owner_id: 'user-1', num_trabajaderas: 7, capacidad_trabajadera: 5, color: '#7b3f9e', created_at: '2026-01-01', updated_at: '2026-01-01' },
+    { id: '3', nombre: 'Nuestro Padre Jesús del Gran Poder',  descripcion: 'Paso de misterio. El Gran Poder.',                imagen_url: '', owner_id: 'user-1', num_trabajaderas: 7, capacidad_trabajadera: 6, color: '#8b0000', created_at: '2026-01-01', updated_at: '2026-01-01' },
+    // Pasos de prueba para los relevos
+    { id: '4', nombre: 'Cristo del Perdón',                   descripcion: 'Prueba de relevos: 4x3 con 6 costaleros que salen en el segundo relevo.', imagen_url: '', owner_id: 'user-1', num_trabajaderas: 4, capacidad_trabajadera: 3, color: '#2e7d6b', created_at: '2026-01-01', updated_at: '2026-01-01' },
+    { id: '5', nombre: 'Virgen de la Alegría',                descripcion: 'Prueba de relevos: 4x3 con dos cuadrillas completas.',                   imagen_url: '', owner_id: 'user-1', num_trabajaderas: 4, capacidad_trabajadera: 3, color: '#2a5d9f', created_at: '2026-01-01', updated_at: '2026-01-01' },
   ];
 
   trabajaderas: Trabajadera[] = [
@@ -68,16 +73,38 @@ export class MockDataService {
     { id: 't2',  paso_id: '1', numero: 2, diferencia_altura_cm: 2, created_at: '', updated_at: '' },
     { id: 't3',  paso_id: '1', numero: 3, diferencia_altura_cm: 5, created_at: '', updated_at: '' },
     { id: 't4',  paso_id: '1', numero: 4, diferencia_altura_cm: 3, created_at: '', updated_at: '' },
+    { id: 't5',  paso_id: '1', numero: 5, diferencia_altura_cm: 4, created_at: '', updated_at: '' },
+    { id: 't6',  paso_id: '1', numero: 6, diferencia_altura_cm: 2, created_at: '', updated_at: '' },
+    { id: 't7',  paso_id: '1', numero: 7, diferencia_altura_cm: 1, created_at: '', updated_at: '' },
+    { id: 't8',  paso_id: '1', numero: 8, diferencia_altura_cm: 3, created_at: '', updated_at: '' },
+    { id: 't9',  paso_id: '1', numero: 9, diferencia_altura_cm: 6, created_at: '', updated_at: '' },
+    { id: 't10', paso_id: '1', numero: 10, diferencia_altura_cm: 4, created_at: '', updated_at: '' },
     // Esperanza (paso 2)
     { id: 'te1', paso_id: '2', numero: 1, diferencia_altura_cm: 0, created_at: '', updated_at: '' },
     { id: 'te2', paso_id: '2', numero: 2, diferencia_altura_cm: 3, created_at: '', updated_at: '' },
     { id: 'te3', paso_id: '2', numero: 3, diferencia_altura_cm: 6, created_at: '', updated_at: '' },
+    { id: 'te4', paso_id: '2', numero: 4, diferencia_altura_cm: 4, created_at: '', updated_at: '' },
+    { id: 'te5', paso_id: '2', numero: 5, diferencia_altura_cm: 2, created_at: '', updated_at: '' },
+    { id: 'te6', paso_id: '2', numero: 6, diferencia_altura_cm: 5, created_at: '', updated_at: '' },
+    { id: 'te7', paso_id: '2', numero: 7, diferencia_altura_cm: 3, created_at: '', updated_at: '' },
     // Gran Poder (paso 3)
     { id: 'tp1', paso_id: '3', numero: 1, diferencia_altura_cm: 0, created_at: '', updated_at: '' },
     { id: 'tp2', paso_id: '3', numero: 2, diferencia_altura_cm: 1, created_at: '', updated_at: '' },
     { id: 'tp3', paso_id: '3', numero: 3, diferencia_altura_cm: 4, created_at: '', updated_at: '' },
     { id: 'tp4', paso_id: '3', numero: 4, diferencia_altura_cm: 4, created_at: '', updated_at: '' },
     { id: 'tp5', paso_id: '3', numero: 5, diferencia_altura_cm: 7, created_at: '', updated_at: '' },
+    { id: 'tp6', paso_id: '3', numero: 6, diferencia_altura_cm: 5, created_at: '', updated_at: '' },
+    { id: 'tp7', paso_id: '3', numero: 7, diferencia_altura_cm: 2, created_at: '', updated_at: '' },
+    // Paso 4 (4x3)
+    { id: 'tq1', paso_id: '4', numero: 1, diferencia_altura_cm: 0, created_at: '', updated_at: '' },
+    { id: 'tq2', paso_id: '4', numero: 2, diferencia_altura_cm: 2, created_at: '', updated_at: '' },
+    { id: 'tq3', paso_id: '4', numero: 3, diferencia_altura_cm: 3, created_at: '', updated_at: '' },
+    { id: 'tq4', paso_id: '4', numero: 4, diferencia_altura_cm: 1, created_at: '', updated_at: '' },
+    // Paso 5 (4x3)
+    { id: 'tc1', paso_id: '5', numero: 1, diferencia_altura_cm: 0, created_at: '', updated_at: '' },
+    { id: 'tc2', paso_id: '5', numero: 2, diferencia_altura_cm: 1, created_at: '', updated_at: '' },
+    { id: 'tc3', paso_id: '5', numero: 3, diferencia_altura_cm: 2, created_at: '', updated_at: '' },
+    { id: 'tc4', paso_id: '5', numero: 4, diferencia_altura_cm: 4, created_at: '', updated_at: '' },
   ];
 
   costaleros: Costalero[] = [
@@ -97,6 +124,8 @@ export class MockDataService {
     { id: 'c11', persona_id: PID_PABLO,     paso_id: '1', trabajadera_id: 't4', nombre: 'Pablo',     apellidos: 'Alonso Reyes',     telefono: '600999000', calzo_cm: 0,   es_aspirante: false, activo: true,  posicion: 1, notas: '', created_at: '', updated_at: '' },
     { id: 'c12', persona_id: PID_SERGIO,    paso_id: '1', trabajadera_id: 't4', nombre: 'Sergio',    apellidos: 'Vargas Molina',    telefono: '601000111', calzo_cm: 1,   es_aspirante: false, activo: true,  posicion: 2, notas: '', created_at: '', updated_at: '' },
     { id: 'c13', persona_id: PID_JORGE,     paso_id: '1', trabajadera_id: 't4', nombre: 'Jorge',     apellidos: 'Delgado Fuentes',  telefono: '601100222', calzo_cm: 1.5, es_aspirante: false, activo: true,  posicion: 3, notas: '', created_at: '', updated_at: '' },
+    // Duplicado de prueba: mismo nombre que Andrés Medina Ríos (Esperanza), teléfono distinto
+    { id: 'c14', persona_id: PID_ANDRES_DUP, paso_id: '1', trabajadera_id: 't4', nombre: 'Andrés',    apellidos: 'Medina Ríos',      telefono: '611222333', calzo_cm: 2,   es_aspirante: false, activo: true,  posicion: 4, notas: '', created_at: '', updated_at: '' },
 
     // ── ESPERANZA (paso 2) ───────────────────────────────────
     { id: 'e-c1',  persona_id: PID_MANUEL,   paso_id: '2', trabajadera_id: 'te1', nombre: 'Manuel',   apellidos: 'López Ruiz',     telefono: '600222333', calzo_cm: 0,   es_aspirante: false, activo: true,  posicion: 1, notas: '', created_at: '', updated_at: '' },
@@ -106,6 +135,8 @@ export class MockDataService {
     { id: 'e-c4',  persona_id: PID_CARLOS,   paso_id: '2', trabajadera_id: 'te2', nombre: 'Carlos',   apellidos: 'Sánchez Vega',   telefono: '600555666', calzo_cm: 0,   es_aspirante: false, activo: true,  posicion: 1, notas: '', created_at: '', updated_at: '' },
     { id: 'e-c5',  persona_id: PID_ANDRES,   paso_id: '2', trabajadera_id: 'te2', nombre: 'Andrés',   apellidos: 'Medina Ríos',    telefono: '601500666', calzo_cm: 1,   es_aspirante: false, activo: true,  posicion: 2, notas: '', created_at: '', updated_at: '' },
     { id: 'e-c6',  persona_id: PID_VICTOR,   paso_id: '2', trabajadera_id: 'te2', nombre: 'Víctor',   apellidos: 'Ortega Sola',    telefono: '601600777', calzo_cm: 1.5, es_aspirante: true,  activo: true,  posicion: 3, notas: '', created_at: '', updated_at: '' },
+    // Duplicado de prueba: mismo nombre que Antonio García Pérez (Cristo / Gran Poder), teléfono distinto
+    { id: 'e-c6b', persona_id: PID_ANTONIO_DUP, paso_id: '2', trabajadera_id: 'te2', nombre: 'Antonio', apellidos: 'García Pérez', telefono: '600111223', calzo_cm: 2, es_aspirante: false, activo: true, posicion: 4, notas: '', created_at: '', updated_at: '' },
     { id: 'e-c7',  persona_id: PID_FERNANDO, paso_id: '2', trabajadera_id: 'te3', nombre: 'Fernando', apellidos: 'Blanco Correa',  telefono: '601700888', calzo_cm: 0,   es_aspirante: false, activo: true,  posicion: 1, notas: '', created_at: '', updated_at: '' },
     { id: 'e-c8',  persona_id: PID_IVAN,     paso_id: '2', trabajadera_id: 'te3', nombre: 'Iván',     apellidos: 'Torres Mena',    telefono: '601800999', calzo_cm: 1,   es_aspirante: false, activo: true,  posicion: 2, notas: '', created_at: '', updated_at: '' },
     { id: 'e-c9',  persona_id: PID_OSCAR,    paso_id: '2', trabajadera_id: 'te3', nombre: 'Óscar',    apellidos: 'Ramos Durán',    telefono: '601900000', calzo_cm: 2,   es_aspirante: true,  activo: true,  posicion: 3, notas: '', created_at: '', updated_at: '' },
@@ -128,10 +159,14 @@ export class MockDataService {
     { id: 'p-c13', persona_id: PID_PABLO,     paso_id: '3', trabajadera_id: 'tp5', nombre: 'Pablo',     apellidos: 'Alonso Reyes',   telefono: '600999000', calzo_cm: 0,   es_aspirante: false, activo: true,  posicion: 1, notas: '', created_at: '', updated_at: '' },
     { id: 'p-c14', persona_id: PID_IGNACIO,   paso_id: '3', trabajadera_id: 'tp5', nombre: 'Ignacio',   apellidos: 'Soto Aranda',    telefono: '603100222', calzo_cm: 1,   es_aspirante: false, activo: true,  posicion: 2, notas: '', created_at: '', updated_at: '' },
     { id: 'p-c15', persona_id: PID_GONZALO,   paso_id: '3', trabajadera_id: 'tp5', nombre: 'Gonzalo',   apellidos: 'Vidal Carmona',  telefono: '603200333', calzo_cm: 2,   es_aspirante: true,  activo: true,  posicion: 3, notas: '', created_at: '', updated_at: '' },
+
+    // ── COSTALEROS DE PRUEBA PARA RELEVOS (Gran Poder, paso 4 y paso 5) ──
+    ...COSTALEROS_PRUEBA_RELEVOS,
   ];
 
   ensayos: Ensayo[] = [
     ...ENSAYOS_PRUEBA_EXTRA,
+    ...ENSAYOS_PRUEBA_RELEVOS,
     { id: 'e1',  paso_id: '1', fecha: '2027-02-10', descripcion: 'Primer ensayo de levantá',  lugar: 'Nave de la hermandad',    created_at: '', updated_at: '' },
     { id: 'e2',  paso_id: '1', fecha: '2027-02-17', descripcion: 'Ensayo de chicotá larga',   lugar: 'Nave de la hermandad',    created_at: '', updated_at: '' },
     { id: 'e3',  paso_id: '1', fecha: '2027-02-24', descripcion: 'Ensayo general',             lugar: 'Calle Feria',             created_at: '', updated_at: '' },
@@ -147,6 +182,7 @@ export class MockDataService {
 
   asistencias: Asistencia[] = [
     ...ASISTENCIAS_PRUEBA_EXTRA,
+    ...generarAsistenciasPrueba(this.costaleros),
     { id: 'a1',  ensayo_id: 'e1', costalero_id: 'c1',  estado: 'presente',    notas: '',        created_at: '' },
     { id: 'a2',  ensayo_id: 'e1', costalero_id: 'c2',  estado: 'presente',    notas: '',        created_at: '' },
     { id: 'a3',  ensayo_id: 'e1', costalero_id: 'c3',  estado: 'ausente',     notas: 'Trabajo', created_at: '' },
@@ -281,6 +317,29 @@ export class MockDataService {
       .filter(c => c.persona_id === personaId)
       .map(c => ({ costalero: c, paso: this.pasos.find(p => p.id === c.paso_id)! }))
       .filter(r => r.paso);
+  }
+
+  /**
+   * Fusiona dos fichas de la misma persona: nos quedamos con `idMantener` (la correcta) y
+   * todo lo de `idEliminar` pasa a ella (pasos y asistencia). Si estaban los dos en el mismo
+   * paso, queda un único registro: el de la persona correcta.
+   */
+  fusionarPersonas(idMantener: string, idEliminar: string) {
+    for (const c of this.costaleros.filter(x => x.persona_id === idEliminar)) {
+      const yaEsta = this.costaleros.find(x => x.persona_id === idMantener && x.paso_id === c.paso_id);
+      if (yaEsta) {
+        // La asistencia del registro sobrante se pasa al que se queda (salvo que ya tenga la suya)
+        for (const a of this.asistencias.filter(x => x.costalero_id === c.id)) {
+          const choca = this.asistencias.some(x => x.costalero_id === yaEsta.id && x.ensayo_id === a.ensayo_id);
+          if (!choca) a.costalero_id = yaEsta.id;
+        }
+        this.asistencias = this.asistencias.filter(a => a.costalero_id !== c.id);
+        this.costaleros = this.costaleros.filter(x => x.id !== c.id);
+      } else {
+        c.persona_id = idMantener;
+      }
+    }
+    this.personas.fusionar(idMantener, idEliminar);
   }
 
   getResumenAsistencia(ensayoId: string) {

@@ -1,3 +1,22 @@
 <ion-app>
   <ion-router-outlet></ion-router-outlet>
+
+  @if (confirmandoSalida) {
+    <div class="salida-fondo" (click)="cancelarSalida()">
+      <div
+        class="salida-panel"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="salida-titulo"
+        (click)="$event.stopPropagation()"
+        >
+        <h2 id="salida-titulo" class="salida-titulo">¿Salir de la aplicación?</h2>
+        <p class="salida-texto">Vas a salir de Mi Cuadrilla.</p>
+        <div class="salida-botones">
+          <button class="salida-btn" (click)="cancelarSalida()">Quedarme</button>
+          <button class="salida-btn salida-btn-primario" (click)="salir()">Salir</button>
+        </div>
+      </div>
+    </div>
+  }
 </ion-app>

@@ -243,7 +243,8 @@
   .sidebar {
     width: 100% !important;
     min-width: 100% !important;
-    height: 60px;
+    // En Android la app ocupa toda la pantalla: se deja sitio para la barra de estado (hora, notificaciones)
+    height: calc(60px + env(safe-area-inset-top, 0px));
     flex-direction: row;
     border-right: none;
     border-bottom: 1px solid var(--mc-border);
@@ -253,7 +254,7 @@
     right: 0;
     z-index: 200;
     align-items: center;
-    padding: 0 12px;
+    padding: env(safe-area-inset-top, 0px) 12px 0;
   }
 
   .sidebar-header {
@@ -276,6 +277,10 @@
   .nav-section-label { display: none; }
 
   .nav-item {
+    // Zona táctil de al menos 44 px para pulsar bien con el dedo
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
     padding: 8px 10px;
     margin-bottom: 0;
     flex-shrink: 0;

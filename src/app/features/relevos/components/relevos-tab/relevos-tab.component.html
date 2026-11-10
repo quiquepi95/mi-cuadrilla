@@ -1,0 +1,106 @@
+<div class="tab-content">
+
+  @if (tarjetas.length === 0) {
+    <!-- Primera vez: preguntar cuántos relevos -->
+    <div class="crear-card">
+      <ion-icon name="swap-horizontal-outline" class="crear-icon"></ion-icon>
+      <h3>¿Cuántos relevos vas a hacer?</h3>
+      <p class="text-muted">El primero será la «Salida» y el último la «Entrada». Podrás cambiar el número cuando quieras.</p>
+
+      <div class="stepper">
+        <button class="stepper-btn" (click)="cambiar(-1)" [disabled]="numero <= min" aria-label="Menos relevos">
+          <ion-icon name="remove-outline"></ion-icon>
+        </button>
+        <input class="stepper-input" type="number" inputmode="numeric" name="numeroCrear" [min]="min" [max]="max"
+               [ngModel]="numero" (ngModelChange)="escribir($event)" (blur)="ajustar()" aria-label="Número de relevos" />
+        <button class="stepper-btn" (click)="cambiar(1)" [disabled]="numero >= max" aria-label="Más relevos">
+          <ion-icon name="add-outline"></ion-icon>
+        </button>
+      </div>
+      <span class="stepper-rango text-muted">De {{ min }} a {{ max }} relevos</span>
+
+      <button class="btn-primary" (click)="crear()">Crear relevos</button>
+    </div>
+  } @else {
+
+    <!-- Acciones -->
+    <div class="tab-actions">
+      @if (hayPuestosVacios) {
+        <button class="btn-primary" (click)="sugerirTodos()">
+          <ion-icon name="sparkles-outline"></ion-icon> Sugerir los que faltan
+        </button>
+      }
+      <button class="btn-outline" (click)="empezarACambiar()">
+        <ion-icon name="options-outline"></ion-icon> Cambiar nº de relevos
+      </button>
+    </div>
+
+    @if (cambiandoNumero) {
+      <div class="cambiar-panel">
+        <span>Número de relevos:</span>
+        <div class="stepper">
+          <button class="stepper-btn" (click)="cambiar(-1)" [disabled]="numero <= min" aria-label="Menos relevos">
+            <ion-icon name="remove-outline"></ion-icon>
+          </button>
+          <input class="stepper-input" type="number" inputmode="numeric" name="numeroCambiar" [min]="min" [max]="max"
+                 [ngModel]="numero" (ngModelChange)="escribir($event)" (blur)="ajustar()" aria-label="Número de relevos" />
+          <button class="stepper-btn" (click)="cambiar(1)" [disabled]="numero >= max" aria-label="Más relevos">
+            <ion-icon name="add-outline"></ion-icon>
+          </button>
+        </div>
+        @if (relevosQueSeQuitan > 0) {
+          <p class="aviso-borrado">
+            <ion-icon name="warning-outline"></ion-icon>
+            <span>
+              Se quitarán {{ relevosQueSeQuitan }} relevo{{ relevosQueSeQuitan !== 1 ? 's' : '' }} <strong>de en medio</strong>
+              (los más cercanos a la Entrada). La Salida y la Entrada se mantienen.
+              @if (puestosQueSePierden > 0) {
+                Se perderán {{ puestosQueSePierden }} puestos ya colocados.
+              }
+            </span>
+          </p>
+        }
+        @if (relevosQueSeAnaden > 0) {
+          <p class="aviso-info">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            <span>
+              Se añadirán {{ relevosQueSeAnaden }} relevo{{ relevosQueSeAnaden !== 1 ? 's' : '' }} <strong>al final</strong>,
+              justo antes de la Entrada.
+            </span>
+          </p>
+        }
+        <div class="cambiar-botones">
+          <button class="btn-primary" (click)="aplicarCambio()" [disabled]="numero === tarjetas.length">Aplicar</button>
+          <button class="btn-outline" (click)="cancelarCambio()">Cancelar</button>
+        </div>
+      </div>
+    }
+
+    @if (mensaje) {
+      <p class="mensaje"><ion-icon name="information-circle-outline"></ion-icon> {{ mensaje }}</p>
+    }
+
+    <!-- Tarjetas de relevos -->
+    <div class="relevos-grid">
+      @for (t of tarjetas; track t.id) {
+        <a class="relevo-card" [routerLink]="['/pasos', pasoId, 'relevos', t.id]">
+          <div class="relevo-head">
+            <h4 class="relevo-nombre">{{ t.nombre }}</h4>
+            <span class="relevo-count" [class.completo]="t.ocupados === totalPuestos">
+              {{ t.ocupados }}/{{ totalPuestos }}
+            </span>
+          </div>
+          <p class="relevo-calles text-muted">
+            @if (t.calleInicio || t.calleFin) {
+              <ion-icon name="location-outline"></ion-icon>
+              {{ t.calleInicio || '¿?' }} → {{ t.calleFin || '¿?' }}
+            } @else {
+              Sin calles
+            }
+          </p>
+          <app-relevo-miniatura [celdas]="t.celdas" [color]="color"></app-relevo-miniatura>
+        </a>
+      }
+    </div>
+  }
+</div>
