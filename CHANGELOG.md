@@ -351,6 +351,8 @@ Cosas hechas pero **no comprobadas todavía en el navegador**. Marcar al probarl
 ### 🐛 Bugs corregidos
 - Botón atrás del móvil: estando en "Mis Pasos" ahora pregunta si se quiere salir de la app. Antes seguía volviendo por el historial del móvil y no preguntaba nunca
 - **Flecha "volver" fija** arriba mientras se hace scroll (`VolverFijoComponent`), en todas las pantallas que tenían flecha (detalle y edición de paso, nuevo paso, ficha, edición y alta de costalero, ensayos y pase de lista). Sustituye al enlace "volver" antiguo. En el móvil, la zona con scroll empieza justo debajo de la barra del menú (margen en vez de relleno)
+- **Build de producción arreglado**: el presupuesto de estilos por componente (nyComponentStyle en ngular.json) pasa de 2/4 kB a 9/12 kB; 
+px ng build compila sin errores ni avisos
 - Pase de lista: los costaleros salen ordenados por trabajadera y, dentro de cada una, por orden alfabético (antes por calzo)
 - Botón atrás del móvil: ahora va a la **pantalla padre** (la misma a la que lleva la flecha 'volver' de cada pantalla) en vez de recorrer todo el historial. De editar un costalero vuelve al listado, y del listado a Mis Pasos. En el paso 2 de 'Nuevo paso' vuelve al paso 1
 - El menú marca la sección activa al navegar con el botón atrás, y el aviso de salida se dibuja al momento. La app no usa zone.js, así que esos cambios no se repintaban hasta el siguiente toque (ahora son señales)
@@ -359,6 +361,7 @@ Cosas hechas pero **no comprobadas todavía en el navegador**. Marcar al probarl
 > Comprobado con los datos del Cristo del Perdón (Rivas y Quintero con 3 relevos, Salcedo y Tapia con 2; Valdés y Escudero en la Entrada), el Gran Poder (20 relevos, 15 cada uno) y la Virgen de la Alegría (2 relevos cada uno). Compila y pasa el lint. **Falta probarlo en el móvil** y regenerar el APK.
 
 ### ⏭️ Pendiente
+- [ ] Sacar a un archivo común los estilos repetidos de las pantallas (sin código duplicado) y volver a bajar el límite de estilos
 - [ ] Que el capataz confirme los relevos del Cristo del Perdón con la versión nueva (pregunta 12)
 - [ ] Preguntar los pasos externos también al crear un costalero nuevo (hoy solo se edita en su ficha)
 
