@@ -11,6 +11,7 @@ export interface Persona {
   apellidos: string;
   telefono: string;  // Identificador humano principal
   alias?: string;    // Apodo opcional
+  pasos_externos?: number; // Otros pasos que saca fuera de tu cuadrilla (no aparecen en tus pasos). Cuenta como carga para repartir relevos
 }
 
 // UUIDs fijos para el mock (simulan UUIDs reales)

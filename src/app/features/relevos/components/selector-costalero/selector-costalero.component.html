@@ -59,6 +59,7 @@
                 T{{ c.numeroTrabajadera }} · calzo {{ formatCalzo(c.costalero.calzo_cm) }}
               </span>
             </span>
+            <app-marcas-costalero [costalero]="c.costalero"></app-marcas-costalero>
             @if (asistenciaTexto(c.costalero); as asist) {
               <span class="cand-asist" [title]="asistenciaTitulo(c.costalero)">{{ asist }}</span>
             }

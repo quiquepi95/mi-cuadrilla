@@ -5,6 +5,7 @@ import { MockDataService } from '../../../../core/services/mock-data.service';
 import { RelevosService, ResumenAsistencia } from '../../../../core/services/relevos.service';
 import { AtrasService } from '../../../../core/services/atras.service';
 import { Costalero, Paso, Relevo, Trabajadera, AsignacionRelevo } from '../../../../core/models';
+import { MarcasCostaleroComponent } from '../marcas-costalero/marcas-costalero.component';
 
 interface Candidato {
   costalero: Costalero;
@@ -24,7 +25,7 @@ interface Candidato {
 @Component({
   selector: 'app-selector-costalero',
   standalone: true,
-  imports: [IonicModule, FormsModule],
+  imports: [IonicModule, FormsModule, MarcasCostaleroComponent],
   templateUrl: './selector-costalero.component.html',
   styleUrls: ['./selector-costalero.component.scss'],
 })
@@ -191,7 +192,7 @@ export class SelectorCostaleroComponent implements OnInit, OnDestroy {
   /** Texto corto de asistencia: ensayos a los que ha asistido / ensayos en los que está marcado ("7/9") */
   asistenciaTexto(c: Costalero): string {
     const r = this.asistencias.get(c.id);
-    return r ? `${r.presentes}/${r.marcados}` : '';
+    return r ? `${r.presentes}/${r.total}` : '';
   }
 
   asistenciaTitulo(c: Costalero): string {
@@ -200,7 +201,8 @@ export class SelectorCostaleroComponent implements OnInit, OnDestroy {
     const extra = [
       r.justificadas > 0 ? `${r.justificadas} justificada${r.justificadas !== 1 ? 's' : ''}` : '',
       r.ausentes > 0 ? `${r.ausentes} ausencia${r.ausentes !== 1 ? 's' : ''}` : '',
+      r.sinMarcar > 0 ? `${r.sinMarcar} sin marcar` : '',
     ].filter(Boolean).join(', ');
-    return `Ha asistido a ${r.presentes} de ${r.marcados} ensayos${extra ? ' (' + extra + ')' : ''}`;
+    return `Ha asistido a ${r.presentes} de ${r.total} ensayos${extra ? ' (' + extra + ')' : ''}`;
   }
 }

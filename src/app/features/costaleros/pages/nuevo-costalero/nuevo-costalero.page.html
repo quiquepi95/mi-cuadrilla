@@ -1,10 +1,7 @@
 @if (paso) {
   <div class="page-container">
+    <app-volver-fijo [ruta]="['/pasos', paso.id]" [texto]="paso.nombre"></app-volver-fijo>
     <div class="page-header">
-      <a [routerLink]="['/pasos', paso.id]" class="back-link">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-        {{ paso.nombre }}
-      </a>
       <h1 class="page-title">Añadir costalero</h1>
       <p class="page-subtitle">Escribe el nombre para buscar en tu nómina o añadir uno nuevo</p>
     </div>

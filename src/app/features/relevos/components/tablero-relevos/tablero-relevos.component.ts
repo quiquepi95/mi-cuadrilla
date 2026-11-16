@@ -5,6 +5,7 @@ import { MockDataService } from '../../../../core/services/mock-data.service';
 import { RelevosService, ResumenAsistencia, MIN_RELEVOS, MAX_RELEVOS } from '../../../../core/services/relevos.service';
 import { Costalero, AsignacionRelevo, Paso, Relevo, Trabajadera } from '../../../../core/models';
 import { SelectorCostaleroComponent } from '../selector-costalero/selector-costalero.component';
+import { MarcasCostaleroComponent, LeyendaRelevosComponent } from '../marcas-costalero/marcas-costalero.component';
 
 interface PuestoTablero {
   columna: number;
@@ -24,6 +25,7 @@ interface TarjetaTablero {
   nombre: string;
   calleInicio: string;
   calleFin: string;
+  marchas: string[];
   ocupados: number;
   vacios: number;
   tieneAnterior: boolean;
@@ -38,7 +40,7 @@ interface TarjetaTablero {
 @Component({
   selector: 'app-tablero-relevos',
   standalone: true,
-  imports: [FormsModule, IonicModule, SelectorCostaleroComponent],
+  imports: [FormsModule, IonicModule, SelectorCostaleroComponent, MarcasCostaleroComponent, LeyendaRelevosComponent],
   templateUrl: './tablero-relevos.component.html',
   styleUrls: ['./tablero-relevos.component.scss'],
 })
@@ -56,6 +58,7 @@ export class TableroRelevosComponent implements OnInit {
   tarjetas: TarjetaTablero[] = [];
   totalPuestos = 0;
   hayAsistencias = false;
+  costalerosPaso: Costalero[] = [];
   private asistencias = new Map<string, ResumenAsistencia>();
 
   /** 'cuadricula': tarjetas una debajo de otra (varias por fila si caben); 'fila': una fila que se desliza hacia los lados */
@@ -75,6 +78,11 @@ export class TableroRelevosComponent implements OnInit {
   editandoCalles: string | null = null;
   calleInicio = '';
   calleFin = '';
+
+  /** Relevos con la lista de marchas desplegada (por defecto, ninguno) */
+  marchasAbiertas = new Set<string>();
+  /** Texto que se está escribiendo para añadir una marcha, por relevo */
+  borradorMarcha: Record<string, string> = {};
 
   /** Puesto abierto en la ventana de selección */
   seleccion: { relevoId: string; trabajaderaId: string; columna: number } | null = null;
@@ -98,6 +106,7 @@ export class TableroRelevosComponent implements OnInit {
       if (resumen) this.asistencias.set(c.id, resumen);
     }
     this.hayAsistencias = this.asistencias.size > 0;
+    this.costalerosPaso = costaleros;
 
     this.totalPuestos = this.relevosService.totalPuestos(this.pasoId);
 
@@ -123,6 +132,7 @@ export class TableroRelevosComponent implements OnInit {
         nombre: this.relevosService.nombre(relevo),
         calleInicio: relevo.calle_inicio ?? '',
         calleFin: relevo.calle_fin ?? '',
+        marchas: [...(relevo.marchas ?? [])],
         ocupados,
         vacios: this.totalPuestos - ocupados,
         tieneAnterior: !!this.relevosService.getAnterior(relevo),
@@ -192,14 +202,16 @@ export class TableroRelevosComponent implements OnInit {
 
   sugerirTodos() {
     const res = this.relevosService.sugerirTodos(this.pasoId);
-    this.mensaje = { relevoId: null, texto: this.relevosService.describirSugerencia(res) };
+    const aviso = this.relevosService.describirSugerencia(res);
+    this.mensaje = aviso ? { relevoId: null, texto: aviso } : null;
     this.confirmar = null;
     this.cargar();
   }
 
   sugerirUno(t: TarjetaTablero) {
     const res = this.relevosService.sugerir(t.relevo.id);
-    this.mensaje = { relevoId: t.relevo.id, texto: this.relevosService.describirSugerencia(res) };
+    const aviso = this.relevosService.describirSugerencia(res);
+    this.mensaje = aviso ? { relevoId: t.relevo.id, texto: aviso } : null;
     this.confirmar = null;
     this.cargar();
   }
@@ -251,6 +263,36 @@ export class TableroRelevosComponent implements OnInit {
     this.cargar();
   }
 
+  // ---- Marchas ----
+
+  alternarMarchas(t: TarjetaTablero) {
+    if (this.marchasAbiertas.has(t.relevo.id)) this.marchasAbiertas.delete(t.relevo.id);
+    else this.marchasAbiertas.add(t.relevo.id);
+  }
+
+  anadirMarcha(t: TarjetaTablero) {
+    const texto = (this.borradorMarcha[t.relevo.id] ?? '').trim();
+    if (!texto) return;
+    this.relevosService.actualizarMarchas(t.relevo.id, [...t.marchas, texto]);
+    this.borradorMarcha[t.relevo.id] = '';
+    this.cargar();
+  }
+
+  quitarMarcha(t: TarjetaTablero, indice: number) {
+    this.relevosService.actualizarMarchas(t.relevo.id, t.marchas.filter((_, i) => i !== indice));
+    this.cargar();
+  }
+
+  /** Sube (-1) o baja (+1) una marcha en el orden */
+  moverMarcha(t: TarjetaTablero, indice: number, delta: -1 | 1) {
+    const destino = indice + delta;
+    if (destino < 0 || destino >= t.marchas.length) return;
+    const lista = [...t.marchas];
+    [lista[indice], lista[destino]] = [lista[destino], lista[indice]];
+    this.relevosService.actualizarMarchas(t.relevo.id, lista);
+    this.cargar();
+  }
+
   // ---- Puestos ----
 
   abrirPuesto(t: TarjetaTablero, fila: FilaTablero, puesto: PuestoTablero) {
@@ -267,7 +309,7 @@ export class TableroRelevosComponent implements OnInit {
 
   asistenciaTexto(c: Costalero): string {
     const r = this.asistencias.get(c.id);
-    return r ? `${r.presentes}/${r.marcados}` : '';
+    return r ? `${r.presentes}/${r.total}` : '';
   }
 
   asistenciaTitulo(c: Costalero): string {
@@ -276,8 +318,9 @@ export class TableroRelevosComponent implements OnInit {
     const extra = [
       r.justificadas > 0 ? `${r.justificadas} justificada${r.justificadas !== 1 ? 's' : ''}` : '',
       r.ausentes > 0 ? `${r.ausentes} ausencia${r.ausentes !== 1 ? 's' : ''}` : '',
+      r.sinMarcar > 0 ? `${r.sinMarcar} sin marcar` : '',
     ].filter(Boolean).join(', ');
-    return `Ha asistido a ${r.presentes} de ${r.marcados} ensayos${extra ? ' (' + extra + ')' : ''}`;
+    return `Ha asistido a ${r.presentes} de ${r.total} ensayos${extra ? ' (' + extra + ')' : ''}`;
   }
 
   /** Texto emergente de un puesto */
@@ -286,7 +329,8 @@ export class TableroRelevosComponent implements OnInit {
     const base = `${p.costalero.nombre} ${p.costalero.apellidos}`;
     const origen = p.deOtra ? ` · es de la T${p.numeroOrigen}` : '';
     const asistencia = this.asistenciaTitulo(p.costalero);
+    const marcas = this.relevosService.describirMarcas(p.costalero);
     const nota = p.asignacion?.nota ? ` · ${p.asignacion.nota}` : '';
-    return base + origen + (asistencia ? ` · ${asistencia}` : '') + nota;
+    return base + origen + (asistencia ? ` · ${asistencia}` : '') + (marcas ? ` · ${marcas}` : '') + nota;
   }
 }

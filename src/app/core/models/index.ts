@@ -110,6 +110,7 @@ export interface Relevo {
   orden: number;            // 1 = Salida ... N = Entrada
   calle_inicio?: string;    // Calle donde empieza el relevo
   calle_fin?: string;       // Calle donde termina el relevo
+  marchas?: string[];       // Marchas que se tocan en este relevo, en orden (pueden ser 3 o 10)
   created_at: string;
   updated_at: string;
 }

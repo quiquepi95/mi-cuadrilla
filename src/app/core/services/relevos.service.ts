@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { MockDataService } from './mock-data.service';
+import { PersonasService } from './personas.service';
 import { Relevo, AsignacionRelevo, Costalero } from '../models';
 import { hoyLocal } from '../utils/fechas';
 import { sembrarRelevosDePrueba } from './datos-prueba-relevos';
@@ -12,6 +13,17 @@ export interface ResumenAsistencia {
   justificadas: number;
   ausentes: number;
   marcados: number;    // ensayos en los que está marcado (presente, justificada o ausente)
+  total: number;       // ensayos ya celebrados del paso (todos deberían tener la misma cifra)
+  sinMarcar: number;   // ensayos celebrados en los que aún no se ha indicado si asistió (total - marcados)
+}
+
+/** Marcas informativas de un costalero (puntos sutiles en las casillas de los relevos) */
+export interface MarcasCostalero {
+  otrosTuyos: number;    // otros pasos tuyos en los que está activo
+  externos: number;      // pasos que saca fuera de tu cuadrilla (los apunta el capataz en su ficha)
+  variosPasos: boolean;  // otrosTuyos + externos > 0
+  aspirante: boolean;
+  sinMarcar: number;     // ensayos celebrados en los que falta indicar si asistió
 }
 
 export interface ResultadoSugerencia {
@@ -32,6 +44,7 @@ export interface ResultadoSugerencia {
 @Injectable({ providedIn: 'root' })
 export class RelevosService {
   private mock = inject(MockDataService);
+  private personas = inject(PersonasService);
 
   relevos: Relevo[] = [];
   asignaciones: AsignacionRelevo[] = [];
@@ -129,6 +142,14 @@ export class RelevosService {
     r.updated_at = new Date().toISOString();
   }
 
+  /** Guarda la lista de marchas de un relevo (en orden). Se ignoran las vacías. */
+  actualizarMarchas(relevoId: string, marchas: string[]) {
+    const r = this.getRelevo(relevoId);
+    if (!r) return;
+    r.marchas = marchas.map(m => m.trim()).filter(m => m.length > 0);
+    r.updated_at = new Date().toISOString();
+  }
+
   // ----------------------------------------------------------
   // PUESTOS
   // ----------------------------------------------------------
@@ -160,31 +181,6 @@ export class RelevosService {
     return this.getAsignaciones(relevoId).filter(a =>
       trabajaderas.has(a.trabajadera_id) && a.columna < paso.capacidad_trabajadera && activos.has(a.costalero_id)
     ).length;
-  }
-
-  /**
-   * Cuadrícula de un relevo para dibujar la miniatura: filas = trabajaderas, columnas = puestos.
-   * Cada casilla lleva las iniciales del costalero colocado ('' si el puesto está vacío).
-   */
-  getCeldas(relevoId: string): string[][] {
-    const relevo = this.getRelevo(relevoId);
-    const paso = relevo ? this.mock.getPaso(relevo.paso_id) : undefined;
-    if (!relevo || !paso) return [];
-    const activos = new Map(this.mock.getCostalerosByPaso(relevo.paso_id).map(c => [c.id, c]));
-    return this.mock.getTrabajaderasByPaso(relevo.paso_id).map(t => {
-      const fila: string[] = [];
-      for (let col = 0; col < paso.capacidad_trabajadera; col++) {
-        const a = this.getAsignacion(relevoId, t.id, col);
-        const costalero = a ? activos.get(a.costalero_id) : undefined;
-        fila.push(costalero ? this.iniciales(costalero) : '');
-      }
-      return fila;
-    });
-  }
-
-  /** Primera letra del nombre y del primer apellido, en mayúsculas */
-  iniciales(c: Costalero): string {
-    return `${c.nombre[0] ?? ''}${c.apellidos.trim()[0] ?? ''}`.toUpperCase();
   }
 
   actualizarNota(relevoId: string, trabajaderaId: string, columna: number, nota: string) {
@@ -262,182 +258,302 @@ export class RelevosService {
   }
 
   // ----------------------------------------------------------
-  // SUGERENCIA DE RELEVO
+  // SUGERENCIA DE RELEVOS
   // ----------------------------------------------------------
 
   /**
    * Rellena los puestos VACÍOS de un relevo (lo que el capataz ya haya colocado no se toca).
-   *
-   * Para cada trabajadera elige entre sus propios costaleros activos que aún no estén en este relevo.
-   * Prioridad, de mayor a menor:
-   *   1. SALIDA / ENTRADA: quien no hace la Salida tiene que hacer la Entrada (y al revés).
-   *      Se aplica cuando el otro extremo ya tiene gente colocada.
-   *   2. TRABAJADERA DOBLADA (tiene al menos el doble de costaleros que puestos): el relevo es un
-   *      cambio completo, así que entran antes los que NO estuvieron en el relevo anterior.
-   *   3. Los que menos relevos llevan debajo del paso (para que todos rueden).
-   *   4. Los que NO estuvieron en el relevo anterior (descansan los que acaban de salir).
-   *   5. Los que mejor asistencia tienen a los ensayos (presente = 1, justificada = 0,5, ausente = 0).
-   *   6. Los que menos pasos sacan en total: se da descanso a quien saca más pasos, porque puede
-   *      venir más cansado de otros días.
-   *   7. Al azar, para no favorecer siempre a los mismos (el resultado puede cambiar al repetir la sugerencia).
    * Nunca coloca a nadie en una trabajadera que no sea la suya: si faltan costaleros,
-   * el puesto se queda vacío y se avisa.
-   *
-   * POSICIÓN: cada costalero vuelve al puesto (columna) que ya ocupó en otros relevos de esa trabajadera,
-   * el más cercano en el tiempo, para que mantenga su posición durante toda la procesión.
-   * Si ese puesto no está libre, ocupa uno de los que queden.
+   * el puesto se queda vacío y se avisa. Las reglas están explicadas en `planificar`.
    */
   sugerir(relevoId: string): ResultadoSugerencia {
     const relevo = this.getRelevo(relevoId);
-    const paso = relevo ? this.mock.getPaso(relevo.paso_id) : undefined;
-    if (!relevo || !paso) return { colocados: 0, sinCubrir: 0, sinDescanso: [] };
-
-    const costaleros = this.mock.getCostalerosByPaso(paso.id);
-    const trabajaderas = this.mock.getTrabajaderasByPaso(paso.id);
-    const relevosDelPaso = this.getRelevos(paso.id);
-
-    // Carga: en cuántos OTROS relevos está ya cada costalero
-    const carga = new Map<string, number>();
-    for (const otro of relevosDelPaso.filter(r => r.id !== relevo.id)) {
-      for (const a of this.getAsignaciones(otro.id)) {
-        carga.set(a.costalero_id, (carga.get(a.costalero_id) ?? 0) + 1);
-      }
-    }
-
-    // Quién estuvo en el relevo anterior
-    const anterior = this.getAnterior(relevo);
-    const estuvoAntes = new Set(anterior ? this.getAsignaciones(anterior.id).map(a => a.costalero_id) : []);
-
-    // Condición Salida / Entrada: quien no está en el otro extremo está obligado a estar en este
-    const esSalida = relevo.orden === 1;
-    const esEntrada = relevo.orden === relevosDelPaso.length;
-    const otroExtremo = esSalida ? relevosDelPaso[relevosDelPaso.length - 1] : esEntrada ? relevosDelPaso[0] : undefined;
-    const enOtroExtremo = new Set(otroExtremo ? this.getAsignaciones(otroExtremo.id).map(a => a.costalero_id) : []);
-    const hayCondicionExtremos = enOtroExtremo.size > 0;
-    const obligado = (c: Costalero) => hayCondicionExtremos && !enOtroExtremo.has(c.id);
-
-    // Asistencia a ensayos ya celebrados y no cancelados
-    const ensayosPasados = this.ensayosPasadosIds(paso.id);
-    const asistencia = (c: Costalero) => this.tasaAsistencia(c.id, ensayosPasados);
-
-    // Puesto habitual: dónde ha ido ya cada costalero en OTROS relevos de este paso.
-    // Sirve para que cada uno mantenga su posición durante toda la procesión.
-    const historial = new Map<string, { distancia: number; orden: number; trabajaderaId: string; columna: number }[]>();
-    for (const otro of relevosDelPaso.filter(r => r.id !== relevo.id)) {
-      for (const a of this.getAsignaciones(otro.id)) {
-        const lista = historial.get(a.costalero_id) ?? [];
-        lista.push({ distancia: Math.abs(otro.orden - relevo.orden), orden: otro.orden, trabajaderaId: a.trabajadera_id, columna: a.columna });
-        historial.set(a.costalero_id, lista);
-      }
-    }
-    // De los relevos en esta misma trabajadera, el más cercano en el tiempo
-    const puestoHabitual = (c: Costalero, trabajaderaId: string): number | undefined =>
-      (historial.get(c.id) ?? [])
-        .filter(h => h.trabajaderaId === trabajaderaId)
-        .sort((a, b) => a.distancia - b.distancia || a.orden - b.orden)[0]?.columna;
-
-    // Cuántos pasos saca cada persona (en todos los pasos en los que está activa)
-    const pasosPorPersona = new Map<string, number>();
-    for (const c of this.mock.costaleros) {
-      if (c.activo) pasosPorPersona.set(c.persona_id, (pasosPorPersona.get(c.persona_id) ?? 0) + 1);
-    }
-    const pasosQueSaca = (c: Costalero) => pasosPorPersona.get(c.persona_id) ?? 1;
-
-    // Desempate final al azar (un número por costalero, fijo durante esta sugerencia)
-    const azar = new Map(costaleros.map(c => [c.id, Math.random()]));
-
-    const enRelevo = new Set(this.getAsignaciones(relevo.id).map(a => a.costalero_id));
-    let colocados = 0;
-    let sinCubrir = 0;
-    const sinDescanso: number[] = [];
-
-    for (const t of trabajaderas) {
-      const huecos: number[] = [];
-      for (let col = 0; col < paso.capacidad_trabajadera; col++) {
-        if (!this.getAsignacion(relevo.id, t.id, col)) huecos.push(col);
-      }
-      if (huecos.length === 0) continue;
-
-      const deLaTrabajadera = costaleros.filter(c => c.trabajadera_id === t.id);
-      const doblada = this.estaDoblada(deLaTrabajadera.length, paso.capacidad_trabajadera);
-
-      const candidatos = deLaTrabajadera
-        .filter(c => !enRelevo.has(c.id))
-        .sort((a, b) =>
-          Number(obligado(b)) - Number(obligado(a)) ||
-          (doblada ? Number(estuvoAntes.has(a.id)) - Number(estuvoAntes.has(b.id)) : 0) ||
-          (carga.get(a.id) ?? 0) - (carga.get(b.id) ?? 0) ||
-          Number(estuvoAntes.has(a.id)) - Number(estuvoAntes.has(b.id)) ||
-          asistencia(b) - asistencia(a) ||
-          pasosQueSaca(a) - pasosQueSaca(b) ||
-          (azar.get(a.id) ?? 0) - (azar.get(b.id) ?? 0)
-        );
-
-      // Los que entran son los primeros del orden de prioridad, uno por hueco
-      const elegidos = candidatos.slice(0, huecos.length);
-      sinCubrir += huecos.length - elegidos.length;
-
-      // Cada uno vuelve a su puesto habitual si está libre
-      const libres = new Set(huecos);
-      const sinPuesto: Costalero[] = [];
-      for (const c of elegidos) {
-        const habitual = puestoHabitual(c, t.id);
-        if (habitual !== undefined && libres.has(habitual)) {
-          libres.delete(habitual);
-          this.asignar(relevo.id, t.id, habitual, c.id);
-        } else {
-          sinPuesto.push(c);
-        }
-      }
-
-      // Los demás ocupan los huecos que sobran; primero los de quienes se van en este relevo
-      // (el que entra releva al que sale en el mismo puesto)
-      const seleccion = new Set(elegidos.map(c => c.id));
-      const seVa = (col: number) => {
-        const previo = anterior ? this.getAsignacion(anterior.id, t.id, col)?.costalero_id : undefined;
-        return previo !== undefined && !seleccion.has(previo);
-      };
-      const restantes = [...libres].sort((a, b) => Number(seVa(b)) - Number(seVa(a)) || a - b);
-      for (const c of sinPuesto) {
-        this.asignar(relevo.id, t.id, restantes.shift()!, c.id);
-      }
-
-      for (const c of elegidos) enRelevo.add(c.id);
-      colocados += elegidos.length;
-      const colocadosAqui = elegidos.length;
-
-      // Si hay tantos costaleros como puestos (o menos), repiten en todos los relevos
-      if (colocadosAqui > 0 && deLaTrabajadera.length <= paso.capacidad_trabajadera) {
-        sinDescanso.push(t.numero);
-      }
-    }
-
-    return { colocados, sinCubrir, sinDescanso };
+    if (!relevo) return { colocados: 0, sinCubrir: 0, sinDescanso: [] };
+    return this.rellenar(relevo.paso_id, relevo.id);
   }
 
-  /** Una trabajadera va "doblada" cuando tiene al menos el doble de costaleros activos que puestos */
-  estaDoblada(costalerosActivos: number, puestos: number): boolean {
-    return puestos > 0 && costalerosActivos >= 2 * puestos;
-  }
-
-  /** Sugiere, en orden, todos los relevos del paso que tengan puestos vacíos */
+  /** Sugiere, de una vez, todos los relevos del paso que tengan puestos vacíos */
   sugerirTodos(pasoId: string): ResultadoSugerencia {
-    const total: ResultadoSugerencia = { colocados: 0, sinCubrir: 0, sinDescanso: [] };
     // Lo que ya había colocado antes (por el capataz) no se toca
     const idsPrevios = new Set(this.asignaciones.map(a => a.id));
-    for (const r of this.getRelevos(pasoId)) {
-      const res = this.sugerir(r.id);
-      total.colocados += res.colocados;
-      total.sinCubrir += res.sinCubrir;
-      for (const n of res.sinDescanso) {
-        if (!total.sinDescanso.includes(n)) total.sinDescanso.push(n);
-      }
-    }
+    const total = this.rellenar(pasoId);
     total.sinDescanso.sort((a, b) => a - b);
     this.estabilizarPuestos(pasoId, idsPrevios);
     return total;
   }
 
+  /**
+   * Marcas informativas de un costalero (puntos sutiles en las casillas):
+   *  - varios pasos: está activo en otro paso tuyo o saca pasos fuera de tu cuadrilla
+   *  - aspirante
+   */
+  marcas(c: Costalero): MarcasCostalero {
+    const otrosTuyos = this.mock.costaleros.filter(x => x.persona_id === c.persona_id && x.id !== c.id && x.activo).length;
+    const externos = this.personas.buscarPorId(c.persona_id)?.pasos_externos ?? 0;
+    return { otrosTuyos, externos, variosPasos: otrosTuyos + externos > 0, aspirante: c.es_aspirante, sinMarcar: this.resumenAsistencia(c.paso_id, c.id)?.sinMarcar ?? 0 };
+  }
+
+  /** Texto para el aviso emergente ('' si no tiene ninguna marca) */
+  describirMarcas(c: Costalero): string {
+    const m = this.marcas(c);
+    const partes: string[] = [];
+    if (m.otrosTuyos > 0) partes.push('también está en ' + (m.otrosTuyos === 1 ? 'otro paso tuyo' : `${m.otrosTuyos} pasos más tuyos`));
+    if (m.externos > 0) partes.push(`saca ${m.externos} paso${m.externos !== 1 ? 's' : ''} fuera de tu cuadrilla`);
+    if (m.aspirante) partes.push('aspirante');
+    if (m.sinMarcar > 0) partes.push(`falta marcar la asistencia a ${m.sinMarcar} ensayo${m.sinMarcar !== 1 ? 's' : ''}`);
+    return partes.join(', ');
+  }
+
+  /** Pasos que saca una persona en total: los suyos activos (en tus pasos) más los que saca fuera de tu cuadrilla */
+  private pasosQueSaca(c: Costalero): number {
+    const propios = this.mock.costaleros.filter(x => x.persona_id === c.persona_id && x.activo).length;
+    return Math.max(1, propios) + (this.personas.buscarPorId(c.persona_id)?.pasos_externos ?? 0);
+  }
+
+  /** Planifica cada trabajadera y coloca el plan en los relevos pedidos (todos si no se indica ninguno) */
+  private rellenar(pasoId: string, soloRelevoId?: string): ResultadoSugerencia {
+    const resultado: ResultadoSugerencia = { colocados: 0, sinCubrir: 0, sinDescanso: [] };
+    const paso = this.mock.getPaso(pasoId);
+    if (!paso) return resultado;
+
+    const costaleros = this.mock.getCostalerosByPaso(paso.id);
+    const trabajaderas = this.mock.getTrabajaderasByPaso(paso.id);
+    const relevos = this.getRelevos(paso.id);
+    const ensayos = this.ensayosPasadosIds(paso.id);
+
+    // 1) Plan de cada trabajadera (quién va en cada relevo)
+    const planes = new Map<string, Map<string, string[]>>();
+    for (const t of trabajaderas) {
+      const propios = costaleros.filter(c => c.trabajadera_id === t.id);
+      planes.set(t.id, this.planificar(paso.capacidad_trabajadera, t.id, propios, relevos, ensayos));
+    }
+
+    // 2) Colocar el plan en los relevos pedidos, de la Salida a la Entrada
+    for (const relevo of relevos) {
+      if (soloRelevoId && relevo.id !== soloRelevoId) continue;
+      const anterior = this.getAnterior(relevo);
+
+      for (const t of trabajaderas) {
+        const huecos: number[] = [];
+        for (let col = 0; col < paso.capacidad_trabajadera; col++) {
+          if (!this.getAsignacion(relevo.id, t.id, col)) huecos.push(col);
+        }
+        if (huecos.length === 0) continue;
+
+        const propios = costaleros.filter(c => c.trabajadera_id === t.id);
+        const ids = planes.get(t.id)?.get(relevo.id) ?? [];
+        const elegidos = ids
+          .map(id => propios.find(c => c.id === id))
+          .filter((c): c is Costalero => !!c && !this.getAsignacionDeCostalero(relevo.id, c.id))
+          .slice(0, huecos.length);
+        resultado.sinCubrir += huecos.length - elegidos.length;
+
+        // Cada uno vuelve a su puesto habitual si está libre
+        const libres = new Set(huecos);
+        const sinPuesto: Costalero[] = [];
+        for (const c of elegidos) {
+          const habitual = this.puestoHabitual(relevo, c, t.id, relevos);
+          if (habitual !== undefined && libres.has(habitual)) {
+            libres.delete(habitual);
+            this.asignar(relevo.id, t.id, habitual, c.id);
+          } else {
+            sinPuesto.push(c);
+          }
+        }
+
+        // Los demás ocupan los huecos que sobran; primero los de quienes se van en este relevo
+        // (el que entra releva al que sale en el mismo puesto)
+        const seleccion = new Set(elegidos.map(c => c.id));
+        const seVa = (col: number) => {
+          const previo = anterior ? this.getAsignacion(anterior.id, t.id, col)?.costalero_id : undefined;
+          return previo !== undefined && !seleccion.has(previo);
+        };
+        const restantes = [...libres].sort((a, b) => Number(seVa(b)) - Number(seVa(a)) || a - b);
+        for (const c of sinPuesto) {
+          this.asignar(relevo.id, t.id, restantes.shift()!, c.id);
+        }
+
+        resultado.colocados += elegidos.length;
+
+        // Si hay tantos costaleros como puestos (o menos), repiten en todos los relevos
+        if (elegidos.length > 0 && propios.length <= paso.capacidad_trabajadera && !resultado.sinDescanso.includes(t.numero)) {
+          resultado.sinDescanso.push(t.numero);
+        }
+      }
+    }
+    return resultado;
+  }
+
+  /** Columna que ya ocupó el costalero en esa trabajadera en el relevo más cercano en el tiempo */
+  private puestoHabitual(relevo: Relevo, c: Costalero, trabajaderaId: string, relevos: Relevo[]): number | undefined {
+    let mejor: { distancia: number; orden: number; columna: number } | undefined;
+    for (const otro of relevos) {
+      if (otro.id === relevo.id) continue;
+      const a = this.getAsignacionDeCostalero(otro.id, c.id);
+      if (!a || a.trabajadera_id !== trabajaderaId) continue;
+      const candidato = { distancia: Math.abs(otro.orden - relevo.orden), orden: otro.orden, columna: a.columna };
+      if (!mejor || candidato.distancia < mejor.distancia || (candidato.distancia === mejor.distancia && candidato.orden < mejor.orden)) {
+        mejor = candidato;
+      }
+    }
+    return mejor?.columna;
+  }
+
+  /**
+   * Plan de una trabajadera: qué costaleros propios van en los puestos vacíos de cada relevo.
+   *
+   * Se miran TODOS los relevos a la vez (no uno detrás de otro) y se busca el reparto de menor "coste":
+   *   1. CUPO DE RELEVOS: cada uno hace n o n+1 relevos. Los relevos de más van a quien mejor
+   *      asistencia tiene (presente 1, ausencia justificada 0,5, sin justificar 0); si hay empate,
+   *      a quien más descansado pueda venir (menos pasos saca en total, contando los de fuera de tu cuadrilla).
+   *      Solo en casos excepcionales (asistencia muy distinta: media diferencia o más) la diferencia llega a 2.
+   *   2. DESCANSO: se evita que alguien haga 3 relevos seguidos, y en menor medida 2 seguidos.
+   *   3. SALIDA / ENTRADA: quien no hace la Salida hace la Entrada (y al revés).
+   *   4. La Entrada y, en menor medida, la Salida van a quienes mejor asistencia tienen.
+   * Lo que el capataz ya haya colocado se respeta. Al azar entre repartos igual de buenos,
+   * así que el resultado puede cambiar al repetir la sugerencia.
+   * Devuelve, para cada relevo (id), los ids de costaleros a colocar en los puestos vacíos.
+   */
+  private planificar(puestos: number, trabajaderaId: string, cands: Costalero[], relevos: Relevo[], ensayos: Set<string>): Map<string, string[]> {
+    const plan = new Map<string, string[]>();
+    const n = relevos.length;
+    const N = cands.length;
+    if (N === 0 || n === 0) return plan;
+
+    // Lo ya colocado: fijo[i][k] = el costalero k ya está en el relevo i (en cualquier fila)
+    const indice = new Map(cands.map((c, k) => [c.id, k]));
+    const fijo: boolean[][] = relevos.map(() => Array<boolean>(N).fill(false));
+    const porColocar: number[] = [];   // puestos vacíos que se pueden rellenar en cada relevo
+    relevos.forEach((r, i) => {
+      const asignaciones = this.getAsignaciones(r.id);
+      const enFila = asignaciones.filter(a => a.columna < puestos && a.trabajadera_id === trabajaderaId).length;
+      for (const a of asignaciones) {
+        const k = indice.get(a.costalero_id);
+        if (k !== undefined) fijo[i][k] = true;
+      }
+      const disponibles = fijo[i].filter(x => !x).length;
+      porColocar.push(Math.min(Math.max(0, puestos - enFila), disponibles));
+    });
+    const relevosAPlanificar = porColocar.map((x, i) => (x > 0 ? i : -1)).filter(i => i >= 0);
+    if (relevosAPlanificar.length === 0) return plan;
+
+    const merito = cands.map(c => this.meritoAsistencia(c.id, ensayos));
+    const carga = cands.map(c => this.pasosQueSaca(c));
+    const azar = cands.map(() => Math.random());
+
+    // ---- Cupo de relevos de cada uno ----
+    const total = Math.min(n * puestos, n * N);
+    const base = Math.floor(total / N);
+    const extra = total - base * N;
+    const orden = cands.map((_, k) => k).sort((a, b) =>
+      merito[b].valor - merito[a].valor || carga[a] - carga[b] || azar[a] - azar[b]);
+    const cupo = Array<number>(N).fill(base);
+    orden.slice(0, extra).forEach(k => cupo[k]++);
+
+    // Excepción: si alguien tiene mucha peor asistencia que otro (media diferencia o más, con al menos
+    // 3 ensayos marcados cada uno), hace un relevo menos y se lo queda quien mejor asistencia tiene.
+    // La diferencia entre el que más y el que menos relevos hace nunca pasa de 2.
+    for (let lo = N - 1; lo >= 1; lo--) {
+      const peor = orden[lo];
+      if (merito[peor].marcas < 3 || cupo[peor] <= 1) continue;
+      for (let hi = 0; hi < lo; hi++) {
+        const mejor = orden[hi];
+        if (merito[mejor].valor - merito[peor].valor < 0.5) break;
+        if (merito[mejor].marcas < 3 || cupo[mejor] >= n) continue;
+        cupo[mejor]++; cupo[peor]--;
+        if (Math.max(...cupo) - Math.min(...cupo) <= 2) break;
+        cupo[mejor]--; cupo[peor]++;   // se pasaría de 2 de diferencia: se deshace
+      }
+    }
+
+    // ---- Coste de un reparto (menor = mejor). Se calcula por persona, así que un intercambio solo afecta a dos ----
+    const costePersona = (en: boolean[][], k: number): number => {
+      let suma = 0;
+      let hechos = 0;
+      for (let i = 0; i < n; i++) {
+        if (!en[i][k]) continue;
+        hechos++;
+        if (i + 1 < n && en[i + 1][k]) {
+          suma += 15;                                   // dos seguidos
+          if (i + 2 < n && en[i + 2][k]) suma += 300;   // tres seguidos
+        }
+      }
+      suma += Math.abs(hechos - cupo[k]) * 1000;
+      if (hechos > 0 && !en[0][k] && !en[n - 1][k]) suma += 120;   // ni Salida ni Entrada
+      if (en[0][k]) suma += (1 - merito[k].valor) * 40;            // la Salida, mejor a quien asiste
+      if (en[n - 1][k]) suma += (1 - merito[k].valor) * 80;        // la Entrada, todavía más
+      return suma;
+    };
+
+    // ---- Búsqueda: reparto inicial al azar y mejoras por intercambios ----
+    // Dos tipos de intercambio: cambiar quién ocupa un puesto de un relevo, o cruzar a dos personas
+    // entre dos relevos (este último no cambia cuántos relevos hace cada uno).
+    const todos = cands.map((_, k) => k);
+    const vueltas = Math.min(30000, 2000 + 60 * N * n);
+    let mejorCoste = Infinity;
+    let mejorReparto: boolean[][] = fijo;
+    for (let intento = 0; intento < 4; intento++) {
+      const en = fijo.map(f => [...f]);
+      const hechos = Array<number>(N).fill(0);
+      for (let i = 0; i < n; i++) for (let k = 0; k < N; k++) if (en[i][k]) hechos[k]++;
+
+      for (const i of relevosAPlanificar) {
+        const libres = todos.filter(k => !en[i][k])
+          .sort((a, b) => (cupo[b] - hechos[b]) - (cupo[a] - hechos[a]) || Math.random() - 0.5);
+        for (const k of libres.slice(0, porColocar[i])) { en[i][k] = true; hechos[k]++; }
+      }
+
+      let actual = todos.reduce((s, k) => s + costePersona(en, k), 0);
+      for (let v = 0; v < vueltas; v++) {
+        const i = relevosAPlanificar[Math.floor(Math.random() * relevosAPlanificar.length)];
+        const dentro = todos.filter(k => en[i][k] && !fijo[i][k]);
+        if (dentro.length === 0) continue;
+        const a = dentro[Math.floor(Math.random() * dentro.length)];
+
+        if (Math.random() < 0.5) {
+          // Cruce: a pasa de i a j y b pasa de j a i
+          const j = relevosAPlanificar[Math.floor(Math.random() * relevosAPlanificar.length)];
+          if (j === i) continue;
+          const deJ = todos.filter(k => en[j][k] && !fijo[j][k] && !en[i][k]);
+          if (deJ.length === 0 || en[j][a]) continue;
+          const b = deJ[Math.floor(Math.random() * deJ.length)];
+          const antes = costePersona(en, a) + costePersona(en, b);
+          en[i][a] = false; en[j][a] = true; en[j][b] = false; en[i][b] = true;
+          const despues = costePersona(en, a) + costePersona(en, b);
+          if (despues <= antes) actual += despues - antes;
+          else { en[i][a] = true; en[j][a] = false; en[j][b] = true; en[i][b] = false; }
+        } else {
+          // Sustitución: a sale de i y entra b
+          const fuera = todos.filter(k => !en[i][k]);
+          if (fuera.length === 0) continue;
+          const b = fuera[Math.floor(Math.random() * fuera.length)];
+          const antes = costePersona(en, a) + costePersona(en, b);
+          en[i][a] = false; en[i][b] = true;
+          const despues = costePersona(en, a) + costePersona(en, b);
+          if (despues <= antes) actual += despues - antes;
+          else { en[i][a] = true; en[i][b] = false; }
+        }
+      }
+
+      if (actual < mejorCoste) { mejorCoste = actual; mejorReparto = en.map(f => [...f]); }
+    }
+
+    for (const i of relevosAPlanificar) {
+      plan.set(relevos[i].id, cands.filter((_, k) => mejorReparto[i][k] && !fijo[i][k]).map(c => c.id));
+    }
+    return plan;
+  }
+
+  /**
+   * Mérito de asistencia para repartir relevos: presente = 1, ausencia justificada = 0,5, ausente sin justificar = 0.
+   * Sin ningún ensayo marcado vale 0,5 (neutro). `marcas` = ensayos en los que está marcado.
+   */
+  private meritoAsistencia(costaleroId: string, ensayosIds: Set<string>): { valor: number; marcas: number } {
+    const marcas = this.mock.asistencias.filter(a => a.costalero_id === costaleroId && ensayosIds.has(a.ensayo_id));
+    if (marcas.length === 0) return { valor: 0.5, marcas: 0 };
+    const suma = marcas.reduce((s, a) => s + (a.estado === 'presente' ? 1 : a.estado === 'justificada' ? 0.5 : 0), 0);
+    return { valor: suma / marcas.length, marcas: marcas.length };
+  }
   /**
    * Cuando se sugieren todos los relevos a la vez, recoloca a los costaleros dentro de cada trabajadera
    * para que el MAYOR NÚMERO POSIBLE vaya en el mismo puesto en todos los relevos en los que sale.
@@ -513,23 +629,21 @@ export class RelevosService {
     }
   }
 
-  /** Texto para enseñar al capataz tras una sugerencia (solo menciona lo que hay que avisar) */
+  /** Texto de aviso tras una sugerencia. Solo dice lo que hay que avisar; si todo fue bien devuelve '' */
   describirSugerencia(res: ResultadoSugerencia): string {
-    if (res.colocados === 0 && res.sinCubrir === 0) return 'No había puestos vacíos que rellenar.';
-
-    let texto = `Sugerencia lista: ${res.colocados} puesto${res.colocados !== 1 ? 's' : ''} rellenado${res.colocados !== 1 ? 's' : ''}.`;
+    const avisos: string[] = [];
     if (res.sinCubrir > 0) {
-      texto += ` ${res.sinCubrir} se han quedado vacíos porque no hay más costaleros en su trabajadera.`;
+      avisos.push(`${res.sinCubrir} puesto${res.sinCubrir !== 1 ? 's se han quedado vacíos' : ' se ha quedado vacío'} porque no hay más costaleros en su trabajadera.`);
     }
     if (res.sinDescanso.length > 0) {
       const lista = res.sinDescanso.length === 1
         ? String(res.sinDescanso[0])
         : `${res.sinDescanso.slice(0, -1).join(', ')} y ${res.sinDescanso[res.sinDescanso.length - 1]}`;
-      texto += res.sinDescanso.length === 1
-        ? ` La trabajadera ${lista} tiene tantos costaleros como puestos (o menos): son los mismos en todos los relevos y no hay a quién dar descanso.`
-        : ` Las trabajaderas ${lista} tienen tantos costaleros como puestos (o menos): son los mismos en todos los relevos y no hay a quién dar descanso.`;
+      avisos.push(res.sinDescanso.length === 1
+        ? `La trabajadera ${lista} tiene tantos costaleros como puestos (o menos): son los mismos en todos los relevos y no hay a quién dar descanso.`
+        : `Las trabajaderas ${lista} tienen tantos costaleros como puestos (o menos): son los mismos en todos los relevos y no hay a quién dar descanso.`);
     }
-    return texto;
+    return avisos.join(' ');
   }
 
   /** Ensayos del paso ya celebrados (fecha hasta hoy) y no cancelados */
@@ -544,25 +658,22 @@ export class RelevosService {
 
   /**
    * Asistencia de un costalero a los ensayos ya celebrados de su paso.
-   * Solo cuentan los ensayos en los que está marcado (los "sin marcar" no cuentan como nada).
-   * Devuelve null si no hay ningún dato.
+   * `total` es el nº de ensayos celebrados (el mismo para todos); `marcados`, aquellos en los que
+   * ya se ha indicado algo; `sinMarcar`, los que faltan por indicar. Los "sin marcar" no cuentan como nada
+   * para repartir relevos, pero se avisa de ellos.
+   * Devuelve null si el paso aún no ha celebrado ningún ensayo.
    */
   resumenAsistencia(pasoId: string, costaleroId: string): ResumenAsistencia | null {
     const ensayos = this.ensayosPasadosIds(pasoId);
+    if (ensayos.size === 0) return null;
     const marcas = this.mock.asistencias.filter(a => a.costalero_id === costaleroId && ensayos.has(a.ensayo_id));
-    if (marcas.length === 0) return null;
     return {
       presentes: marcas.filter(a => a.estado === 'presente').length,
       justificadas: marcas.filter(a => a.estado === 'justificada').length,
       ausentes: marcas.filter(a => a.estado === 'ausente').length,
       marcados: marcas.length,
+      total: ensayos.size,
+      sinMarcar: Math.max(0, ensayos.size - marcas.length),
     };
-  }
-
-  private tasaAsistencia(costaleroId: string, ensayosIds: Set<string>): number {
-    const marcas = this.mock.asistencias.filter(a => a.costalero_id === costaleroId && ensayosIds.has(a.ensayo_id));
-    if (marcas.length === 0) return 0.5; // sin datos: neutral
-    const suma = marcas.reduce((s, a) => s + (a.estado === 'presente' ? 1 : a.estado === 'justificada' ? 0.5 : 0), 0);
-    return suma / marcas.length;
   }
 }

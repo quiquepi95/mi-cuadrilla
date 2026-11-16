@@ -3,12 +3,13 @@ import { Component, OnInit, inject } from '@angular/core';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { FormsModule } from '@angular/forms';
+import { VolverFijoComponent } from '../../../../shared/components/volver-fijo/volver-fijo.component';
 import { PersonasService, Persona } from '../../../../core/services/personas.service';
 
 @Component({
   selector: 'app-editar-costalero',
   standalone: true,
-  imports: [RouterModule, IonicModule, FormsModule],
+  imports: [RouterModule, IonicModule, FormsModule, VolverFijoComponent],
   templateUrl: './editar-costalero.page.html',
   styleUrls: ['./editar-costalero.page.scss'],
 })
@@ -25,6 +26,7 @@ export class EditarCostaleroPage implements OnInit {
   apellidos = '';
   telefono  = '';
   alias     = '';
+  pasosExternos: number | null = 0;
 
   // Validación
   submitted          = false;
@@ -43,6 +45,7 @@ export class EditarCostaleroPage implements OnInit {
       this.apellidos = this.persona.apellidos;
       this.telefono  = this.persona.telefono;
       this.alias     = this.persona.alias ?? '';
+      this.pasosExternos = this.persona.pasos_externos ?? 0;
     }
   }
 
@@ -71,6 +74,7 @@ export class EditarCostaleroPage implements OnInit {
       apellidos: this.apellidos.trim(),
       telefono:  this.telefono.trim(),
       alias:     this.alias.trim() || undefined,
+      pasos_externos: Math.max(0, Math.min(20, Math.round(Number(this.pasosExternos) || 0))),
     });
 
     this.router.navigateByUrl(this.origen);

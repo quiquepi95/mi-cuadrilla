@@ -4,6 +4,7 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { FormsModule } from '@angular/forms';
 import { MockDataService } from '../../../../core/services/mock-data.service';
+import { VolverFijoComponent } from '../../../../shared/components/volver-fijo/volver-fijo.component';
 import { origenInterno } from '../../../../core/utils/navegacion';
 import { Ensayo, Costalero, Trabajadera, EstadoAsistencia } from '../../../../core/models';
 
@@ -15,7 +16,7 @@ interface CostaleroConAsistencia extends Costalero {
 @Component({
   selector: 'app-pase-lista',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule, FormsModule],
+  imports: [CommonModule, RouterModule, IonicModule, FormsModule, VolverFijoComponent],
   templateUrl: './pase-lista.page.html',
   styleUrls: ['./pase-lista.page.scss'],
 })
@@ -41,14 +42,22 @@ export class PaseListaPage implements OnInit {
       this.trabajaderas = this.mock.getTrabajaderasByPaso(this.ensayo.paso_id);
       const costaleros  = this.mock.getCostalerosByPaso(this.ensayo.paso_id);
 
-      this.costaleros = costaleros.map(c => {
-        const asistencia = asistencias.find(a => a.costalero_id === c.id);
-        return {
-          ...c,
-          estado: asistencia?.estado ?? null,
-          notas: asistencia?.notas || '',
-        };
-      });
+      const numeroDe = (c: Costalero) => this.trabajaderas.find(t => t.id === c.trabajadera_id)?.numero ?? Number.MAX_SAFE_INTEGER;
+
+      // Primero por trabajadera y, dentro de cada una, por orden alfabético del nombre (lo primero que se lee) y después los apellidos
+      this.costaleros = costaleros
+        .map(c => {
+          const asistencia = asistencias.find(a => a.costalero_id === c.id);
+          return {
+            ...c,
+            estado: asistencia?.estado ?? null,
+            notas: asistencia?.notas || '',
+          };
+        })
+        .sort((a, b) =>
+          numeroDe(a) - numeroDe(b) ||
+          a.nombre.localeCompare(b.nombre, 'es') ||
+          a.apellidos.localeCompare(b.apellidos, 'es'));
     }
   }
 

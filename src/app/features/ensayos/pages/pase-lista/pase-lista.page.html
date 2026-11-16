@@ -1,9 +1,8 @@
 @if (ensayo) {
   <div class="page-container">
+    <!-- Volver: barra fija arriba mientras se hace scroll -->
+    <app-volver-fijo [ruta]="origen || ['/pasos', ensayo.paso_id]" [queryParams]="origen ? null : { tab: 'ensayos' }" [texto]="origen ? 'Volver a ensayos' : 'Volver al paso'"></app-volver-fijo>
     <div class="page-header">
-      <a [routerLink]="origen || ['/pasos', ensayo.paso_id]" [queryParams]="origen ? null : { tab: 'ensayos' }" class="back-link">
-        <ion-icon name="arrow-back-outline"></ion-icon> {{ origen ? 'Volver a ensayos' : 'Volver al paso' }}
-      </a>
       <h1 class="page-title">Pase de Lista</h1>
       <p class="page-subtitle">
         {{ ensayo.descripcion }}

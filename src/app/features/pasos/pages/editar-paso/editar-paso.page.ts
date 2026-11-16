@@ -4,6 +4,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { FormsModule } from '@angular/forms';
 import { MockDataService } from '../../../../core/services/mock-data.service';
+import { VolverFijoComponent } from '../../../../shared/components/volver-fijo/volver-fijo.component';
 import { COLORES_PRESET } from '../../../../core/constants/colores';
 import { Paso } from '../../../../core/models';
 
@@ -26,7 +27,7 @@ interface Movimiento { desde: string; hasta: string; }
 @Component({
   selector: 'app-editar-paso',
   standalone: true,
-  imports: [RouterModule, IonicModule, FormsModule],
+  imports: [RouterModule, IonicModule, FormsModule, VolverFijoComponent],
   templateUrl: './editar-paso.page.html',
   styleUrls: ['./editar-paso.page.scss'],
 })

@@ -4,6 +4,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { FormsModule } from '@angular/forms';
 import { MockDataService } from '../../../../core/services/mock-data.service';
+import { VolverFijoComponent } from '../../../../shared/components/volver-fijo/volver-fijo.component';
 import { PersonasService, Persona } from '../../../../core/services/personas.service';
 import { Trabajadera, Paso } from '../../../../core/models';
 import { Subject } from 'rxjs';
@@ -14,7 +15,7 @@ export type AlertaDuplicado = 'telefono_existe' | 'nombre_similar' | null;
 @Component({
   selector: 'app-nuevo-costalero',
   standalone: true,
-  imports: [RouterModule, IonicModule, FormsModule],
+  imports: [RouterModule, IonicModule, FormsModule, VolverFijoComponent],
   templateUrl: './nuevo-costalero.page.html',
   styleUrls: ['./nuevo-costalero.page.scss'],
 })

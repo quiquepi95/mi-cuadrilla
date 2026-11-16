@@ -10,11 +10,8 @@
   }
 
   @if (paso) {
+    <app-volver-fijo [ruta]="['/pasos', paso.id]" [texto]="paso.nombre"></app-volver-fijo>
     <div class="page-header">
-      <a [routerLink]="['/pasos', paso.id]" class="back-link">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-        {{ paso.nombre }}
-      </a>
       <h1 class="page-title">Editar paso</h1>
       <p class="page-subtitle">Los cambios se aplican al pulsar "Guardar cambios"</p>
     </div>

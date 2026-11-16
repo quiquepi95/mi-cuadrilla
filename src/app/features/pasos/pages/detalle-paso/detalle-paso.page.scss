@@ -23,19 +23,6 @@
   flex-wrap: wrap;
 }
 
-.back-link {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--mc-text-muted);
-  font-size: 0.82rem;
-  text-decoration: none;
-  width: 100%;
-  margin-bottom: 8px;
-  &:hover { color: var(--mc-accent); }
-  ion-icon { font-size: 1rem; }
-}
-
 .paso-avatar-large {
   width: 56px;
   height: 56px;

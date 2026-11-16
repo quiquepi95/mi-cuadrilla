@@ -10,11 +10,8 @@
   }
 
   @if (registro && paso && persona) {
+    <app-volver-fijo [ruta]="['/pasos', paso.id]" [texto]="paso.nombre"></app-volver-fijo>
     <div class="page-header">
-      <a [routerLink]="['/pasos', paso.id]" class="back-link">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-        {{ paso.nombre }}
-      </a>
       <h1 class="page-title">{{ nombreCompleto }}</h1>
       <p class="page-subtitle">
         <span class="paso-dot" [style.background]="paso.color || 'var(--mc-accent)'"></span>
@@ -50,6 +47,12 @@
             <span class="personal-label">Apodo</span>
             <span class="personal-value">{{ persona.alias || '—' }}</span>
           </div>
+          @if (persona.pasos_externos) {
+            <div class="personal-item">
+              <span class="personal-label">Otros pasos (fuera de tu cuadrilla)</span>
+              <span class="personal-value">{{ persona.pasos_externos }}</span>
+            </div>
+          }
         </div>
         <div class="personal-footer">
           <span class="personal-hint">

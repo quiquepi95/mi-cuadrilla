@@ -4,6 +4,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { FormsModule } from '@angular/forms';
 import { MockDataService } from '../../../../core/services/mock-data.service';
+import { VolverFijoComponent } from '../../../../shared/components/volver-fijo/volver-fijo.component';
 import { PersonasService, Persona } from '../../../../core/services/personas.service';
 import { Costalero, Paso, Trabajadera } from '../../../../core/models';
 
@@ -15,7 +16,7 @@ import { Costalero, Paso, Trabajadera } from '../../../../core/models';
 @Component({
   selector: 'app-detalle-costalero',
   standalone: true,
-  imports: [RouterModule, IonicModule, FormsModule],
+  imports: [RouterModule, IonicModule, FormsModule, VolverFijoComponent],
   templateUrl: './detalle-costalero.page.html',
   styleUrls: ['./detalle-costalero.page.scss'],
 })

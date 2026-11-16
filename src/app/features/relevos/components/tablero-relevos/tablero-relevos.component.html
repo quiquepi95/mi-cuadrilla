@@ -91,6 +91,9 @@
       <p class="mensaje"><ion-icon name="information-circle-outline"></ion-icon> {{ mensaje.texto }}</p>
     }
 
+    <!-- Leyenda: arriba, para saber qué significa cada cosa antes de empezar -->
+    <app-leyenda-relevos [costaleros]="costalerosPaso" [hayAsistencias]="hayAsistencias"></app-leyenda-relevos>
+
     <!-- Todos los relevos a la vez -->
     <div class="tablero" [class.fila]="vista === 'fila'" [style.--cols]="paso?.capacidad_trabajadera">
       @for (t of tarjetas; track t.relevo.id) {
@@ -118,6 +121,11 @@
                   <ion-icon name="trash-outline"></ion-icon>
                 </button>
               }
+              <button class="icono" [class.activo]="marchasAbiertas.has(t.relevo.id)" (click)="alternarMarchas(t)"
+                      title="Marchas de este relevo" aria-label="Marchas de este relevo">
+                <ion-icon name="musical-notes-outline"></ion-icon>
+                @if (t.marchas.length > 0) { <span class="contador">{{ t.marchas.length }}</span> }
+              </button>
               <button class="icono" [class.activo]="editandoCalles === t.relevo.id" (click)="alternarCalles(t)"
                       title="Calles donde empieza y termina" aria-label="Editar las calles">
                 <ion-icon [name]="editandoCalles === t.relevo.id ? 'checkmark-outline' : 'location-outline'"></ion-icon>
@@ -138,6 +146,46 @@
               <ion-icon name="location-outline"></ion-icon>
               {{ t.calleInicio || '¿?' }} → {{ t.calleFin || '¿?' }}
             </p>
+          }
+
+          <!-- Marchas del relevo (solo se ven al pulsar el botón) -->
+          @if (marchasAbiertas.has(t.relevo.id)) {
+            <div class="marchas">
+              @if (t.marchas.length > 0) {
+                <ol class="marchas-lista">
+                  @for (m of t.marchas; track $index) {
+                    <li>
+                      <span class="marcha-nombre">{{ m }}</span>
+                      <span class="marcha-botones">
+                        <button class="mini" (click)="moverMarcha(t, $index, -1)" [disabled]="$first"
+                                aria-label="Subir esta marcha" title="Subir">
+                          <ion-icon name="chevron-up-outline"></ion-icon>
+                        </button>
+                        <button class="mini" (click)="moverMarcha(t, $index, 1)" [disabled]="$last"
+                                aria-label="Bajar esta marcha" title="Bajar">
+                          <ion-icon name="chevron-down-outline"></ion-icon>
+                        </button>
+                        <button class="mini mini-peligro" (click)="quitarMarcha(t, $index)"
+                                aria-label="Quitar esta marcha" title="Quitar">
+                          <ion-icon name="close-outline"></ion-icon>
+                        </button>
+                      </span>
+                    </li>
+                  }
+                </ol>
+              } @else {
+                <p class="marchas-vacio text-muted">Aún no hay marchas para este relevo.</p>
+              }
+              <div class="marcha-nueva">
+                <input type="text" [name]="'marcha-' + t.relevo.id" [(ngModel)]="borradorMarcha[t.relevo.id]"
+                       (keyup.enter)="anadirMarcha(t)" placeholder="Añadir marcha" maxlength="80"
+                       autocomplete="off" aria-label="Nombre de la marcha" />
+                <button class="icono" (click)="anadirMarcha(t)" [disabled]="!(borradorMarcha[t.relevo.id] || '').trim()"
+                        aria-label="Añadir marcha" title="Añadir">
+                  <ion-icon name="add-outline"></ion-icon>
+                </button>
+              </div>
+            </div>
           }
 
           @if (confirmar && confirmar.relevoId === t.relevo.id) {
@@ -180,6 +228,7 @@
                         @if (p.deOtra) { <span class="p-badge">T{{ p.numeroOrigen }}</span> }
                         @if (p.asignacion?.nota) { <ion-icon name="document-text-outline" class="p-nota"></ion-icon> }
                         @if (asistenciaTexto(p.costalero); as asist) { <span class="p-asist">{{ asist }}</span> }
+                        <app-marcas-costalero class="p-marcas" [costalero]="p.costalero"></app-marcas-costalero>
                       } @else {
                         <ion-icon name="add-outline"></ion-icon>
                       }
@@ -193,9 +242,6 @@
       }
     </div>
 
-    @if (hayAsistencias) {
-      <p class="leyenda">El número pequeño de cada casilla es la asistencia a ensayos (asistidos / total).</p>
-    }
   }
 
   @if (seleccion; as s) {

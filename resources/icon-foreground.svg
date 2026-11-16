@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><defs><linearGradient id="oro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8c97a"/><stop offset="1" stop-color="#c9a84c"/></linearGradient></defs><g transform="translate(153.6 153.6) scale(0.7)"><g fill="url(#oro)"><rect x="190" y="806" width="644" height="34" rx="12"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><defs><linearGradient id="oro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8c97a"/><stop offset="1" stop-color="#c9a84c"/></linearGradient></defs><g transform="translate(128 93.5) scale(0.75)"><g fill="url(#oro)"><rect x="190" y="806" width="644" height="34" rx="12"/>
     <ellipse cx="300" cy="792" rx="74" ry="14"/>
     <ellipse cx="300" cy="736" rx="56" ry="50"/>
     <rect x="276" y="654" width="48" height="50"/>

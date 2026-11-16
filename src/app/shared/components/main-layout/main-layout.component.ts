@@ -35,8 +35,10 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
         flex-direction: column;
       }
       .main-content {
-        /* barra superior fija (60 px) + barra de estado de Android; abajo, la barra de gestos */
-        padding-top: calc(64px + env(safe-area-inset-top, 0px));
+        /* La barra superior (fija, 60 px más la barra de estado de Android) queda fuera de la zona con scroll:
+           se deja su sitio con margen y no con relleno, así las barras "sticky" de las pantallas
+           (flecha "volver") se pegan justo debajo de ella. Abajo, la barra de gestos. */
+        margin-top: calc(60px + env(safe-area-inset-top, 0px));
         padding-bottom: env(safe-area-inset-bottom, 0px);
       }
     }

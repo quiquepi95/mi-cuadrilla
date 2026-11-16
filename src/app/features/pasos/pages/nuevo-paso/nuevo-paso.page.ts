@@ -1,9 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 
 import { RouterModule, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { FormsModule } from '@angular/forms';
 import { MockDataService } from '../../../../core/services/mock-data.service';
+import { VolverFijoComponent } from '../../../../shared/components/volver-fijo/volver-fijo.component';
+import { AtrasService } from '../../../../core/services/atras.service';
 import { COLORES_PRESET } from '../../../../core/constants/colores';
 
 interface EnsayoForm {
@@ -15,13 +17,16 @@ interface EnsayoForm {
 @Component({
   selector: 'app-nuevo-paso',
   standalone: true,
-  imports: [RouterModule, IonicModule, FormsModule],
+  imports: [RouterModule, IonicModule, FormsModule, VolverFijoComponent],
   templateUrl: './nuevo-paso.page.html',
   styleUrls: ['./nuevo-paso.page.scss'],
 })
-export class NuevoPasoPage {
+export class NuevoPasoPage implements OnDestroy {
   private mock = inject(MockDataService);
   private router = inject(Router);
+  private atras = inject(AtrasService);
+  /** Mientras se está en el paso 2, el botón atrás del móvil vuelve al paso 1 en vez de salir */
+  private quitarAtras?: () => void;
 
 
   // ---- Paso actual del wizard ----
@@ -64,6 +69,8 @@ export class NuevoPasoPage {
     if (!this.nombre.trim()) return;
     this.submitted = false;
     this.step = 2;
+    this.quitarAtras?.();
+    this.quitarAtras = this.atras.registrar(() => this.volver());
   }
 
   // ---- Paso 2: ensayos ----
@@ -150,5 +157,11 @@ export class NuevoPasoPage {
 
   volver() {
     this.step = 1;
+    this.quitarAtras?.();
+    this.quitarAtras = undefined;
+  }
+
+  ngOnDestroy() {
+    this.quitarAtras?.();
   }
 }

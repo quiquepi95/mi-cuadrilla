@@ -1,7 +1,7 @@
 <ion-app>
   <ion-router-outlet></ion-router-outlet>
 
-  @if (confirmandoSalida) {
+  @if (confirmandoSalida()) {
     <div class="salida-fondo" (click)="cancelarSalida()">
       <div
         class="salida-panel"

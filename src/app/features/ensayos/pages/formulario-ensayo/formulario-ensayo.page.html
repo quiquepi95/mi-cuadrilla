@@ -10,11 +10,8 @@
   }
 
   @if (paso && !noEncontrado) {
+    <app-volver-fijo [ruta]="origen || ['/pasos', paso.id]" [queryParams]="origen ? null : { tab: 'ensayos' }" [texto]="origen ? 'Ensayos' : paso.nombre"></app-volver-fijo>
     <div class="page-header">
-      <a [routerLink]="origen || ['/pasos', paso.id]" [queryParams]="origen ? null : { tab: 'ensayos' }" class="back-link">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-        {{ origen ? 'Ensayos' : paso.nombre }}
-      </a>
       <h1 class="page-title">{{ modoEdicion ? 'Editar ensayo' : 'Nuevo ensayo' }}</h1>
       @if (!modoEdicion) {
         <p class="page-subtitle">Ponle el nombre que quieras: Ensayo 3, Mudá, Retranqueo...</p>

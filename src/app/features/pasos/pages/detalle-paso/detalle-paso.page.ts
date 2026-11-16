@@ -1,23 +1,25 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { MockDataService } from '../../../../core/services/mock-data.service';
 import { hoyLocal } from '../../../../core/utils/fechas';
 import { Paso, Trabajadera, Costalero, Ensayo } from '../../../../core/models';
-import { RelevosTabComponent } from '../../../relevos/components/relevos-tab/relevos-tab.component';
+import { VolverFijoComponent } from '../../../../shared/components/volver-fijo/volver-fijo.component';
 import { TableroRelevosComponent } from '../../../relevos/components/tablero-relevos/tablero-relevos.component';
 
 @Component({
   selector: 'app-detalle-paso',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule, RelevosTabComponent, TableroRelevosComponent],
+  imports: [CommonModule, RouterModule, IonicModule, TableroRelevosComponent, VolverFijoComponent],
   templateUrl: './detalle-paso.page.html',
   styleUrls: ['./detalle-paso.page.scss'],
 })
-export class DetallePasoPage implements OnInit {
+export class DetallePasoPage implements OnInit, AfterViewInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private mock = inject(MockDataService);
+  private cdr = inject(ChangeDetectorRef);
+  private observadorTabs?: ResizeObserver;
 
   paso?: Paso;
   trabajaderas: Trabajadera[] = [];
@@ -26,7 +28,7 @@ export class DetallePasoPage implements OnInit {
   tabsScrollIzq = false;
   tabsScrollDer = false;
   @ViewChild('tabsBar') tabsBar?: ElementRef<HTMLElement>;
-  activeTab: 'trabajaderas' | 'ensayos' | 'relevos' | 'tablero' | 'auxiliares' = 'trabajaderas';
+  activeTab: 'trabajaderas' | 'ensayos' | 'relevos' | 'auxiliares' = 'trabajaderas';
 
   // Set de persona_id que aparecen en más de un paso
   private personasEnVariosPasos = new Set<string>();
@@ -34,7 +36,7 @@ export class DetallePasoPage implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id') || '1';
     const tab = this.route.snapshot.queryParamMap.get('tab');
-    if (tab === 'trabajaderas' || tab === 'ensayos' || tab === 'relevos' || tab === 'tablero' || tab === 'auxiliares') {
+    if (tab === 'trabajaderas' || tab === 'ensayos' || tab === 'relevos' || tab === 'auxiliares') {
       this.activeTab = tab;
     }
     this.paso        = this.mock.getPaso(id);
@@ -60,6 +62,22 @@ export class DetallePasoPage implements OnInit {
     });
   }
 
+  /** Recalcula las flechas cuando cambia el tamaño de la barra o de sus pestañas (iconos y fuentes cargan tarde) */
+  ngAfterViewInit() {
+    const barra = this.tabsBar?.nativeElement;
+    if (!barra || typeof ResizeObserver === 'undefined') return;
+    this.observadorTabs = new ResizeObserver(() => {
+      this.actualizarFlechasTabs();
+      this.cdr.detectChanges();
+    });
+    this.observadorTabs.observe(barra);
+    Array.from(barra.children).forEach(hijo => this.observadorTabs!.observe(hijo));
+  }
+
+  ngOnDestroy() {
+    this.observadorTabs?.disconnect();
+  }
+
   /** Muestra las flechas solo si hay pestañas ocultas a ese lado */
   @HostListener('window:resize')
   actualizarFlechasTabs() {
@@ -79,7 +97,7 @@ export class DetallePasoPage implements OnInit {
   }
 
   /** Cambia de pestaña y, si la barra se desliza (móvil), deja la pestaña elegida a la vista */
-  seleccionarTab(tab: 'trabajaderas' | 'ensayos' | 'relevos' | 'tablero' | 'auxiliares', evento?: Event) {
+  seleccionarTab(tab: 'trabajaderas' | 'ensayos' | 'relevos' | 'auxiliares', evento?: Event) {
     this.activeTab = tab;
     const boton = evento?.currentTarget as HTMLElement | null;
     boton?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });

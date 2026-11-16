@@ -1,5 +1,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { filter } from 'rxjs';
 import { IonicModule } from '@ionic/angular/lazy';
 
 import { ThemeService } from '../../../core/services/theme.service';
@@ -23,6 +25,9 @@ export class SidebarComponent implements OnInit {
   router = inject(Router);
 
   collapsed = signal(false);
+
+  /** Ruta actual. La app no usa zone.js: sin una señal, el menú no se repinta al navegar con el botón atrás */
+  private rutaActual = signal(this.router.url);
   version = APP_VERSION;
 
   navItems: NavItem[] = [
@@ -31,6 +36,11 @@ export class SidebarComponent implements OnInit {
     { label: 'Ensayos',      icon: 'calendar-outline',    route: '/ensayos'     },
     { label: 'Auxiliares',   icon: 'person-add-outline',  route: '/auxiliares'  },
   ];
+
+  constructor() {
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd), takeUntilDestroyed())
+      .subscribe(() => this.rutaActual.set(this.router.url));
+  }
 
   ngOnInit() {
     this.themeService.init();
@@ -41,6 +51,7 @@ export class SidebarComponent implements OnInit {
   }
 
   isActive(route: string): boolean {
+    this.rutaActual(); // hace que la plantilla dependa de la ruta
     return this.router.isActive(route, {
       paths: 'subset',
       queryParams: 'ignored',

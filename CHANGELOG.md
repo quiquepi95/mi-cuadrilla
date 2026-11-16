@@ -315,6 +315,8 @@ Cosas hechas pero **no comprobadas todavía en el navegador**. Marcar al probarl
 - Detalle del paso: flechas a los lados de la barra de pestañas cuando hay más pestañas ocultas (solo aparecen si hace falta)
 - Versión visible en el menú lateral (`vX.Y.Z`), leída de `package.json` (`src/app/core/constants/version.ts`). `package.json` pasa a 0.9.0
 - Icono nuevo: **llamador del Gran Poder** (dorado sobre fondo oscuro). Fuentes en `resources/*.svg`, generado para Android (normal, redondo y adaptativo), PWA (`manifest.webmanifest`) y favicon SVG. Variantes descartadas y foto de referencia en `resources/variantes/`
+- Icono más grande y centrado: en `icon-only.svg` el dibujo pasa de ocupar el 63 % al 82 % del ancho (escala 1,3) y en `icon-foreground.svg` (adaptativo) la escala sube de 0,7 a 0,75, sin salirse de la zona segura. Regenerados Android, PWA y favicon
+- Arreglo: la flecha derecha de las pestañas del detalle del paso ya se ve desde el principio (antes solo salía tras tocar la barra, porque se calculaba antes de que cargaran los iconos). Ahora se recalcula con un `ResizeObserver`
 - APK de pruebas regenerado con todo lo anterior (`android\app\build\outputs\apk\debug\mi-cuadrilla.apk`)
 
 ### 💬 Decisiones
@@ -325,6 +327,40 @@ Cosas hechas pero **no comprobadas todavía en el navegador**. Marcar al probarl
 
 ### ⏭️ Pendiente
 - [ ] Guardar la vista "en fila" de los relevos de cada paso (cuando haya base de datos)
+
+---
+
+## [0.10.0] - 2026-11-15 · Sesión 10: Relevos más justos, marcas sutiles y pasos externos
+
+### ✅ Hecho
+- **Sugerencia de relevos rehecha.** Ya no rellena relevo a relevo: planifica cada trabajadera entera (todos sus relevos a la vez) y respeta lo que el capataz ya había colocado. Reglas nuevas (ver `CONTEXT.md`, "Sugerir relevo"):
+  - Cupo de relevos: todos hacen los mismos o uno más. El relevo de más va a quien mejor asistencia tiene; si empatan, a quien más descansado pueda venir
+  - Asistencia para repartir: presente 1, **ausencia justificada 0,5**, sin justificar 0. La justificada resta menos que la injustificada, pero algo más que no faltar (se mantiene el criterio de siempre)
+  - Excepción: con una asistencia muy distinta (media diferencia o más, con 3 ensayos marcados como mínimo) el de peor asistencia hace un relevo menos. Nunca más de 2 de diferencia
+  - Descanso: se evita hacer 3 relevos seguidos y, en menor medida, 2
+  - La Entrada (y algo menos la Salida) van a quienes mejor asistencia tienen. Se mantiene "quien no hace la Salida hace la Entrada"
+- **Pasos externos**: nuevo campo "Otros pasos que saca (fuera de tu cuadrilla)" en la ficha de la persona (editar y detalle). Cuenta como carga en el desempate de descanso
+- **Marcas sutiles** en las casillas de relevos (pestaña Relevos y selector): punto lleno = saca más pasos (otro paso tuyo o externo), anillo vacío = aspirante. Leyenda bajo la cuadrícula que explica también el "2/3". El aviso emergente de la casilla lo describe con palabras
+- Icono ampliado y centrado (ver 0.9.0): pasa del 63 % al 82 % del ancho
+- **Leyenda arriba**, antes de la cuadrícula, con cada explicación en su propia línea
+- Tras sugerir ya no sale "Sugerencia lista: N puestos rellenados". Solo se avisa si hay algo que decir (puestos vacíos o trabajaderas sin descanso posible)
+- **Marchas por relevo** (pestaña Relevos): botón con nota musical en cada tarjeta que despliega o pliega la lista (oculta por defecto). Se pueden añadir, subir, bajar y quitar; un contador en el botón indica cuántas hay
+- **Asistencia con el mismo total para todos**: el número pequeño de cada casilla ya no es "asistidos / marcados" sino "asistidos / ensayos celebrados del paso" (con 3 ensayos, quien fue a 1 ve "1/3"). Si a alguien le falta indicar si asistió a algún ensayo, sale un **"!"** de aviso en su casilla (y una línea en la leyenda); el aviso emergente dice a cuántos ensayos. Los sin marcar no cuentan para repartir relevos
+- **Una sola pestaña de relevos**: se queda la nueva (renombrada a "Relevos") y se borran la original, su editor por relevo (`/pasos/:pasoId/relevos/:id`), las miniaturas con iniciales y el código que quedó sin uso
+
+### 🐛 Bugs corregidos
+- Botón atrás del móvil: estando en "Mis Pasos" ahora pregunta si se quiere salir de la app. Antes seguía volviendo por el historial del móvil y no preguntaba nunca
+- **Flecha "volver" fija** arriba mientras se hace scroll (`VolverFijoComponent`), en todas las pantallas que tenían flecha (detalle y edición de paso, nuevo paso, ficha, edición y alta de costalero, ensayos y pase de lista). Sustituye al enlace "volver" antiguo. En el móvil, la zona con scroll empieza justo debajo de la barra del menú (margen en vez de relleno)
+- Pase de lista: los costaleros salen ordenados por trabajadera y, dentro de cada una, por orden alfabético (antes por calzo)
+- Botón atrás del móvil: ahora va a la **pantalla padre** (la misma a la que lleva la flecha 'volver' de cada pantalla) en vez de recorrer todo el historial. De editar un costalero vuelve al listado, y del listado a Mis Pasos. En el paso 2 de 'Nuevo paso' vuelve al paso 1
+- El menú marca la sección activa al navegar con el botón atrás, y el aviso de salida se dibuja al momento. La app no usa zone.js, así que esos cambios no se repintaban hasta el siguiente toque (ahora son señales)
+
+### 📍 Estado actual
+> Comprobado con los datos del Cristo del Perdón (Rivas y Quintero con 3 relevos, Salcedo y Tapia con 2; Valdés y Escudero en la Entrada), el Gran Poder (20 relevos, 15 cada uno) y la Virgen de la Alegría (2 relevos cada uno). Compila y pasa el lint. **Falta probarlo en el móvil** y regenerar el APK.
+
+### ⏭️ Pendiente
+- [ ] Que el capataz confirme los relevos del Cristo del Perdón con la versión nueva (pregunta 12)
+- [ ] Preguntar los pasos externos también al crear un costalero nuevo (hoy solo se edita en su ficha)
 
 ---
 

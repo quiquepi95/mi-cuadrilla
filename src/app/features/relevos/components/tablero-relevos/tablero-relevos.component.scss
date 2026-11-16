@@ -76,7 +76,7 @@
 // Cada tarjeta necesita sitio para sus columnas; en pantallas estrechas ocupa todo el ancho.
 .tablero {
   display: grid; gap: 12px; align-items: start;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--cols) * 64px + 60px)), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--cols) * 64px + 96px)), 1fr));
 
   // Una sola fila que se desliza a los lados: se ve el relevo vecino mientras se coloca
   &.fila {
@@ -91,21 +91,22 @@
   border-radius: 14px; padding: 12px; min-width: 0;
 }
 
-.cabecera { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.titulo-area { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.nombre { margin: 0; font-size: 1rem; font-weight: 700; color: var(--mc-text); white-space: nowrap; }
+.cabecera { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 8px; }
+.titulo-area { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.nombre { margin: 0; font-size: 0.88rem; font-weight: 700; color: var(--mc-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chip {
-  font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+  font-size: 0.65rem; font-weight: 700; padding: 1px 3px; border-radius: 8px; white-space: nowrap; flex-shrink: 0;
   background: var(--mc-bg); color: var(--mc-text-muted); border: 1px solid var(--mc-border);
   &.completo { color: var(--mc-accent); border-color: var(--mc-accent); }
 }
 
-.iconos { display: flex; gap: 4px; flex-shrink: 0; }
+.iconos { display: flex; gap: 2px; flex-shrink: 0; }
 .icono {
-  width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
+  position: relative;
+  width: 28px; height: 28px; border-radius: 7px; cursor: pointer; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   background: transparent; color: var(--mc-text-muted); border: 1px solid var(--mc-border);
-  ion-icon { font-size: 1.1rem; }
+  ion-icon { font-size: 1rem; }
   &:hover:not(:disabled) { border-color: var(--mc-accent); color: var(--mc-accent); }
   &:disabled { opacity: 0.35; cursor: default; }
   &.activo { border-color: var(--mc-accent); color: var(--mc-accent); background: var(--mc-accent-subtle); }
@@ -120,6 +121,43 @@
   display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;
   input {
     min-width: 0; background: var(--mc-bg); border: 1px solid var(--mc-border); border-radius: 8px;
+    padding: 8px 10px; color: var(--mc-text); font-size: 0.82rem; font-family: inherit; outline: none;
+    &:focus { border-color: var(--mc-accent); }
+  }
+}
+
+// ---- Marchas del relevo (se despliegan con el botón) ----
+.contador {
+  position: absolute; top: -5px; right: -5px; min-width: 14px; height: 14px; padding: 0 3px;
+  border-radius: 8px; background: var(--mc-accent); color: var(--mc-bg);
+  font-size: 0.58rem; font-weight: 700; line-height: 14px; text-align: center;
+}
+.marchas {
+  background: var(--mc-bg); border: 1px solid var(--mc-border); border-radius: 10px;
+  padding: 8px; margin-bottom: 8px;
+}
+.marchas-lista {
+  margin: 0 0 8px; padding: 0 0 0 22px; max-height: 240px; overflow-y: auto;
+  li { padding: 3px 0; font-size: 0.82rem; color: var(--mc-text); &::marker { color: var(--mc-text-muted); font-size: 0.75rem; } }
+  li > .marcha-nombre { overflow-wrap: anywhere; }
+  li { display: list-item; }
+}
+.marchas-lista li { position: relative; padding-right: 92px; min-height: 28px; }
+.marcha-botones { position: absolute; right: 0; top: 1px; display: flex; gap: 2px; }
+.mini {
+  width: 28px; height: 28px; border-radius: 6px; cursor: pointer; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; color: var(--mc-text-muted); border: none;
+  ion-icon { font-size: 1rem; }
+  &:hover:not(:disabled) { color: var(--mc-accent); }
+  &:disabled { opacity: 0.25; cursor: default; }
+  &.mini-peligro:hover:not(:disabled) { color: var(--mc-danger); }
+}
+.marchas-vacio { margin: 0 0 8px; font-size: 0.78rem; }
+.marcha-nueva {
+  display: flex; gap: 6px; align-items: center;
+  input {
+    flex: 1; min-width: 0; background: var(--mc-bg-surface); border: 1px solid var(--mc-border); border-radius: 8px;
     padding: 8px 10px; color: var(--mc-text); font-size: 0.82rem; font-family: inherit; outline: none;
     &:focus { border-color: var(--mc-accent); }
   }
@@ -174,9 +212,9 @@
   font-size: 0.5rem; line-height: 1; color: var(--mc-text-muted); opacity: 0.7;
 }
 
-.leyenda { margin: 12px 0 0; text-align: center; font-size: 0.72rem; color: var(--mc-text-muted); }
+.p-marcas { position: absolute; left: 3px; bottom: 2px; }
 
 @media (max-width: 480px) {
-  .nombre { font-size: 0.95rem; }
-  .icono { width: 40px; height: 40px; }
+  .nombre { font-size: 0.9rem; }
+  .icono { width: 34px; height: 34px; }
 }

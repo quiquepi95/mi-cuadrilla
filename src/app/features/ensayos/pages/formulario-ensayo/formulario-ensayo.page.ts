@@ -4,6 +4,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
 import { FormsModule } from '@angular/forms';
 import { MockDataService } from '../../../../core/services/mock-data.service';
+import { VolverFijoComponent } from '../../../../shared/components/volver-fijo/volver-fijo.component';
 import { origenInterno } from '../../../../core/utils/navegacion';
 import { Ensayo, Paso } from '../../../../core/models';
 
@@ -14,7 +15,7 @@ import { Ensayo, Paso } from '../../../../core/models';
 @Component({
   selector: 'app-formulario-ensayo',
   standalone: true,
-  imports: [RouterModule, IonicModule, FormsModule],
+  imports: [RouterModule, IonicModule, FormsModule, VolverFijoComponent],
   templateUrl: './formulario-ensayo.page.html',
   styleUrls: ['./formulario-ensayo.page.scss'],
 })

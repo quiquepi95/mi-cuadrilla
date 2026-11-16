@@ -1,11 +1,9 @@
 <div class="page-container">
 
   @if (persona) {
+    <!-- Volver: barra fija arriba mientras se hace scroll -->
+    <app-volver-fijo [ruta]="origen" texto="Volver"></app-volver-fijo>
     <div class="page-header">
-      <a [routerLink]="origen" class="back-link">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-        Volver
-      </a>
       <h1 class="page-title">Editar costalero</h1>
       <p class="page-subtitle">
         Los cambios se aplican en todos los pasos en los que participa
@@ -100,6 +98,27 @@
           placeholder="Ej: el Largo, Manolo el Chico..."
           autocomplete="off"
           />
+      </div>
+      <!-- Pasos en otras cuadrillas -->
+      <div class="field">
+        <label class="field-label">
+          Otros pasos que saca (fuera de tu cuadrilla)
+          <span class="optional">(opcional)</span>
+        </label>
+        <input
+          class="field-input"
+          type="number"
+          inputmode="numeric"
+          min="0"
+          max="20"
+          [(ngModel)]="pasosExternos"
+          name="pasosExternos"
+          placeholder="0"
+          />
+        <span class="field-hint">
+          Pasos en los que es costalero y donde tú no eres capataz. No salen en tu lista de pasos,
+          pero suponen una carga: se tienen en cuenta al repartir los relevos.
+        </span>
       </div>
       <!-- Acciones -->
       <div class="form-actions">
